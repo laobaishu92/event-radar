@@ -18,10 +18,12 @@ from dateutil import parser as dtparse
 
 ROOT      = pathlib.Path(__file__).parent
 TODAY     = datetime.date.today()
+# events dated before this are dropped at collection time (2-day grace window)
+PAST_CUTOFF = (TODAY - datetime.timedelta(days=2)).isoformat()
 UA        = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
              "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 HEADERS   = {"User-Agent": UA, "Accept-Language": "en-GB,en;q=0.9"}
-MAX_PER_SOURCE = 40          # safety cap
+MAX_PER_SOURCE = 120         # safety cap (past-dated events trimmed afterwards)
 TIMEOUT   = 25
 
 # -----------------------------------------------------------------------------
@@ -73,6 +75,8 @@ COUNTRY_FLAG = {
     "Italy":"\U0001F1EE\U0001F1F9", "Spain":"\U0001F1EA\U0001F1F8",
     "Switzerland":"\U0001F1E8\U0001F1ED", "Austria":"\U0001F1E6\U0001F1F9",
     "Poland":"\U0001F1F5\U0001F1F1", "United States":"\U0001F1FA\U0001F1F8",
+    "Hungary":"\U0001F1ED\U0001F1FA", "Hong Kong":"\U0001F1ED\U0001F1F0",
+    "Slovakia":"\U0001F1F8\U0001F1F0",
 }
 # city -> [lat, lng]  for the map  (extend as you add institutions)
 CITY_COORDS = {
@@ -80,6 +84,9 @@ CITY_COORDS = {
     "Stockholm":[59.329,18.069], "London":[51.507,-0.128], "Canberra":[-35.281,149.129],
     "Aarhus":[56.162,10.204], "Oslo":[59.913,10.752], "Helsinki":[60.170,24.941],
     "Brussels":[50.847,4.357], "The Hague":[52.078,4.288], "Vienna":[48.208,16.373],
+    "Washington":[38.907,-77.037], "Warsaw":[52.232,21.012], "Hong Kong":[22.319,114.169],
+    "Cambridge":[52.205,0.119], "Oxford":[51.755,-1.255], "Tampere":[61.498,23.761],
+    "Aalborg":[57.048,9.922], "Bratislava":[48.148,17.107], "Sydney":[-33.869,151.209],
 }
 
 # -----------------------------------------------------------------------------
@@ -92,7 +99,9 @@ def fetch(url):
     return r
 
 def clean(text):
-    return " ".join((text or "").split())
+    # drop soft hyphens / zero-width chars that some CMSs inject for line-breaking
+    text = (text or "").replace("\u00ad", "").replace("\u200b", "")
+    return " ".join(text.split())
 
 def stable_id(url):
     return hashlib.sha1(url.encode("utf-8")).hexdigest()[:12]
@@ -259,6 +268,9 @@ def collect_scrape(src):
         title = clean(a.get_text())
         if len(title) < 8:                       # skip "read more" / icon links
             continue
+        # some templates prefix the link text with a UI label
+        title = re.sub(r"^\s*(view event|event|read more|details)\s*[:\-\u2013]?\s*",
+                       "", title, flags=re.I)
 
         # climb to the WIDEST container still under the size cap: a single event
         # card is small; once text spills into sibling events it exceeds the cap.
@@ -277,15 +289,33 @@ def collect_scrape(src):
                      for el in container.select('[class*="date" i], time')]
         date_blob = " . ".join(date_bits) + " . " + ctext
 
-        s, en, tm = extract_dates(date_blob)
+        # a date in the TITLE is the most reliable (e.g. GTI "April 30: ...");
+        # try it first, fall back to the card text
+        s, en, tm = extract_dates(title)
+        if not s:
+            s, en, tm = extract_dates(date_blob)
 
-        # tidy the display title: drop a leading date, cut at a trailing date
-        disp = re.sub(r"^\s*\d{1,2}\s+(" + MONTHS + r")\.?(\s+\d{4})?\s*[-\u2013:]*\s*",
-                      "", title, flags=re.I)
+        # tidy the display title: strip leading date / time / punctuation noise.
+        # listing cards often prepend "DD Mon YYYY", "16:00-17:30", stray commas.
+        disp = title
+        for _ in range(4):                       # peel several fragments
+            new = disp
+            new = re.sub(r"^\s*[,;:.\u2013-]+\s*", "", new)        # leading punct
+            new = re.sub(r"^\s*[a-z]{0,3}\.?\s*[-\u2013]\s*", "", new, flags=re.I)  # "t. - "
+            new = re.sub(r"^\s*\d{1,2}\s+(" + MONTHS + r")\.?(\s+\d{4})?\s*",
+                         "", new, flags=re.I)                       # "29 May 2026"
+            new = re.sub(r"^\s*(" + MONTHS + r")\.?\s+\d{1,2},?(\s+\d{4})?\s*",
+                         "", new, flags=re.I)                       # "May 29 2026"
+            new = re.sub(r"^\s*[0-2]?\d[:.][0-5]\d"
+                         r"(?:\s*[-\u2013]\s*[0-2]?\d[:.][0-5]\d)?\s*",
+                         "", new)                                   # "16:00-17:30"
+            if new == disp:
+                break
+            disp = new
         m = re.search(r"\d{1,2}\s+(" + MONTHS + r")", disp, flags=re.I)
         if m and m.start() > 10:
             disp = disp[:m.start()]
-        disp = clean(disp) or title
+        disp = clean(disp) or clean(title)
 
         seen.add(absu)
         out.append(dict(title=disp[:200], url=absu,
@@ -350,6 +380,11 @@ def run():
 
         kept = 0
         for ev in raw:
+            # drop events we can date as clearly in the past — keeps events.json
+            # lean and stops a long archive (e.g. GTI) from crowding out the
+            # upcoming events. Undated events are always kept.
+            if ev["date"] and ev["date"] < PAST_CUTOFF:
+                continue
             eid  = stable_id(ev["url"])
             blob = f"{ev['title']} . {ev['summary']}"
             event = dict(

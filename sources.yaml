@@ -7,10 +7,17 @@
 #  method:  rss     -> generic feed parser, just needs `url`
 #           scrape  -> generic scraper (keyed by `key`); handles most event pages
 #  type:    university | think_tank | research_institute
-#  region:  UK | Nordic | Continental | Indo-Pacific  (free text; used as a filter)
+#  region:  UK | Nordic | Continental | Indo-Pacific | North America
 #  country: full country name -> drives the flag emoji (see COUNTRY_FLAG in collector.py)
 #  city:    home city -> drives the map pin (see CITY_COORDS in collector.py)
+#
+#  enabled: false  -> not auto-collected, but still shown on the dashboard as a
+#                     manual-check card with a link to the events page. Used for
+#                     sites that block servers or render events with JavaScript
+#                     (a plain scraper can't see JS-rendered content).
 # =============================================================================
+
+# ----- ORIGINAL EIGHT --------------------------------------------------------
 
 - key: ceri
   name: Sciences Po — CERI
@@ -108,9 +115,7 @@
   url: https://ps.au.dk/en/current/events
   events_page: https://ps.au.dk/en/current/events
 
-# IISS hard-blocks datacentre IPs (HTTP 403 on the whole domain). It cannot be
-# collected from a GitHub Actions runner. Left disabled, but it still appears on
-# the dashboard as a manual-check card with a link to its events page.
+# IISS hard-blocks datacentre IPs (HTTP 403). Manual-check card only.
 - key: iiss
   name: International Institute for Strategic Studies
   short: IISS
@@ -122,3 +127,262 @@
   method: scrape
   url: https://www.iiss.org/events/
   events_page: https://www.iiss.org/events/
+
+# ----- ADDED: AUTO-COLLECTED -------------------------------------------------
+
+- key: ecfr
+  name: European Council on Foreign Relations
+  short: ECFR
+  enabled: true
+  type: think_tank
+  region: Continental
+  country: Germany
+  city: Berlin
+  method: scrape
+  url: https://ecfr.eu/events/
+  events_page: https://ecfr.eu/events/
+
+- key: isdp
+  name: Institute for Security and Development Policy
+  short: ISDP
+  enabled: false
+  type: research_institute
+  region: Nordic
+  country: Sweden
+  city: Stockholm
+  method: scrape
+  url: https://www.isdp.eu/event/
+  events_page: https://www.isdp.eu/event/
+
+- key: cam_polis
+  name: Cambridge — Politics & International Studies (POLIS)
+  short: Cam/POLIS
+  enabled: true
+  type: university
+  region: UK
+  country: United Kingdom
+  city: Cambridge
+  method: scrape
+  url: https://www.polis.cam.ac.uk/events
+  events_page: https://www.polis.cam.ac.uk/events
+
+- key: cam_cfg
+  name: Cambridge — Centre for Geopolitics
+  short: Cam/CfG
+  enabled: true
+  type: university
+  region: UK
+  country: United Kingdom
+  city: Cambridge
+  method: scrape
+  url: https://www.cfg.cam.ac.uk/events/
+  events_page: https://www.cfg.cam.ac.uk/events/
+
+- key: euiss
+  name: EU Institute for Security Studies
+  short: EUISS
+  enabled: true
+  type: research_institute
+  region: Continental
+  country: France
+  city: Paris
+  method: scrape
+  url: https://www.iss.europa.eu/activities/events
+  events_page: https://www.iss.europa.eu/activities/events
+
+- key: csis
+  name: Center for Strategic and International Studies
+  short: CSIS
+  enabled: true
+  type: think_tank
+  region: North America
+  country: United States
+  city: Washington
+  method: scrape
+  url: https://www.csis.org/events
+  events_page: https://www.csis.org/events
+
+- key: gti
+  name: Global Taiwan Institute
+  short: GTI
+  enabled: false
+  type: think_tank
+  region: North America
+  country: United States
+  city: Washington
+  method: scrape
+  url: https://globaltaiwan.org/events/
+  events_page: https://globaltaiwan.org/events/
+
+- key: ceias
+  name: Central European Institute of Asian Studies
+  short: CEIAS
+  enabled: false
+  type: think_tank
+  region: Continental
+  country: Slovakia
+  city: Bratislava
+  method: scrape
+  url: https://ceias.eu/events/
+  events_page: https://ceias.eu/events/
+
+- key: ku_polsci
+  name: University of Copenhagen — Political Science
+  short: UCPH/PS
+  enabled: true
+  type: university
+  region: Nordic
+  country: Denmark
+  city: Copenhagen
+  method: scrape
+  url: https://politicalscience.ku.dk/events/
+  events_page: https://politicalscience.ku.dk/events/
+
+- key: cbs
+  name: Copenhagen Business School
+  short: CBS
+  enabled: true
+  type: university
+  region: Nordic
+  country: Denmark
+  city: Copenhagen
+  method: scrape
+  url: https://www.cbs.dk/en/events
+  events_page: https://www.cbs.dk/en/events
+
+- key: fiia
+  name: Finnish Institute of International Affairs
+  short: FIIA
+  enabled: false
+  type: research_institute
+  region: Nordic
+  country: Finland
+  city: Helsinki
+  method: scrape
+  url: https://www.fiia.fi/en/events
+  events_page: https://www.fiia.fi/en/events
+
+- key: nkk
+  name: Swedish National China Centre
+  short: NKK
+  enabled: true
+  type: research_institute
+  region: Nordic
+  country: Sweden
+  city: Stockholm
+  method: scrape
+  url: https://kinacentrum.se/en/events/
+  events_page: https://kinacentrum.se/en/events/
+
+# ----- ADDED: MANUAL-CHECK CARDS (JS-rendered or server-blocked) -------------
+#  These render their events with JavaScript, which a plain scraper cannot see,
+#  or block automated traffic. They appear on the dashboard as a card with a
+#  "check" link. If you want them auto-collected, that needs a headless browser.
+
+- key: lowy
+  name: Lowy Institute
+  short: Lowy
+  enabled: false
+  type: think_tank
+  region: Indo-Pacific
+  country: Australia
+  city: Sydney
+  method: scrape
+  url: https://www.lowyinstitute.org/events
+  events_page: https://www.lowyinstitute.org/events
+
+- key: oxford_china
+  name: Oxford University — China Centre
+  short: Oxf/China
+  enabled: false
+  type: university
+  region: UK
+  country: United Kingdom
+  city: Oxford
+  method: scrape
+  url: https://www.chinacentre.ox.ac.uk/events
+  events_page: https://www.chinacentre.ox.ac.uk/events
+
+- key: pism
+  name: Polish Institute of International Affairs
+  short: PISM
+  enabled: false
+  type: research_institute
+  region: Continental
+  country: Poland
+  city: Warsaw
+  method: scrape
+  url: https://www.pism.pl/events
+  events_page: https://www.pism.pl/events
+
+- key: ceu_dps
+  name: Central European University — Political Science
+  short: CEU/PS
+  enabled: false
+  type: university
+  region: Continental
+  country: Austria
+  city: Vienna
+  method: scrape
+  url: https://events.ceu.edu/
+  events_page: https://events.ceu.edu/
+
+- key: aau_ps
+  name: Aalborg University — Politics & Society
+  short: AAU/PS
+  enabled: false
+  type: university
+  region: Nordic
+  country: Denmark
+  city: Aalborg
+  method: scrape
+  url: https://www.politics-society.aau.dk/news-and-events
+  events_page: https://www.politics-society.aau.dk/news-and-events
+
+- key: fub_ipp
+  name: FU Berlin — Indo-Pacific Politics
+  short: FUB/IPP
+  enabled: false
+  type: university
+  region: Continental
+  country: Germany
+  city: Berlin
+  method: scrape
+  url: https://www.polsoz.fu-berlin.de/en/polwiss/forschung/international/indo-pacific/
+  events_page: https://www.polsoz.fu-berlin.de/en/polwiss/forschung/international/indo-pacific/
+
+- key: cfhk
+  name: Committee for Freedom in Hong Kong Foundation
+  short: CFHK
+  enabled: false
+  type: think_tank
+  region: North America
+  country: United States
+  city: Washington
+  method: scrape
+  url: https://www.thecfhk.org/events
+  events_page: https://www.thecfhk.org/events
+
+- key: helsinki
+  name: University of Helsinki
+  short: Helsinki
+  enabled: false
+  type: university
+  region: Nordic
+  country: Finland
+  city: Helsinki
+  method: scrape
+  url: https://tapahtumat.helsinki.fi/en-fi
+  events_page: https://tapahtumat.helsinki.fi/en-fi
+
+- key: tampere
+  name: Tampere University
+  short: Tampere
+  enabled: false
+  type: university
+  region: Nordic
+  country: Finland
+  city: Tampere
+  method: scrape
+  url: https://www.tuni.fi/en/news/events
+  events_page: https://www.tuni.fi/en/news/events

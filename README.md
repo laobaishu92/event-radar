@@ -98,6 +98,8 @@ open index.html
 
 ## Current sources
 
+**Auto-collected** (16 — events pulled automatically):
+
 | Institution | Type | Method |
 |---|---|---|
 | Sciences Po — CERI | University | RSS |
@@ -108,24 +110,47 @@ open index.html
 | KCL — War Studies | University | scrape |
 | SIPRI | Research institute | scrape |
 | Aarhus — Political Science | University | scrape |
-| IISS | Think tank | manual card |
+| ECFR | Think tank | scrape |
+| Cambridge — POLIS | University | scrape |
+| Cambridge — Centre for Geopolitics | University | scrape |
+| EUISS | Research institute | scrape |
+| CSIS | Think tank | scrape |
+| Univ. of Copenhagen — Political Science | University | scrape |
+| Copenhagen Business School | University | scrape |
+| Swedish National China Centre | Research institute | scrape |
+
+**Manual-check cards** (14 — not auto-collected; shown with a "check ↗" link):
+IISS, Global Taiwan Institute, CEIAS, FIIA, ISDP, Lowy, Oxford China Centre,
+PISM, CEU — Political Science, Aalborg — Politics & Society, FU Berlin —
+Indo-Pacific, CFHK Foundation, University of Helsinki, Tampere University.
+
+See *Known limitations* for why each is manual rather than auto-collected.
 
 ---
 
 ## Known limitations
 
-These are deliberate v1 trade-offs, not bugs:
+These are deliberate trade-offs, not bugs:
 
-* **IISS is not auto-collected.** Its site hard-blocks datacentre traffic
-  (HTTP 403), so a free GitHub Actions runner cannot reach it. It stays on the
-  dashboard as a *manual-check card* (in the Sources panel, with a "check ↗"
-  link to its events page). To collect it automatically, run the collector
-  from your own machine on a cron, or add a headless-browser scraping step.
-* **SIPRI and Aarhus list few public events.** A low count there is genuine,
-  not a broken scraper.
+* **14 institutions are manual-check cards, not auto-collected.** Two reasons:
+  (1) some sites render their event list with JavaScript, which the scraper —
+  a plain HTML fetcher — cannot see (Lowy, Oxford China Centre, PISM, CEU,
+  Aalborg, FU Berlin, Helsinki, Tampere, GTI), or block automated traffic
+  (IISS, CFHK); (2) some publish a *news / past-event-recording* feed rather
+  than an upcoming-events calendar (CEIAS, FIIA, ISDP), so auto-collecting them
+  would just surface stale items. All 14 still appear in the Sources panel with
+  a one-click "check ↗" link to their events page. To auto-collect a
+  JavaScript site, the collector would need a headless browser (e.g. Playwright)
+  instead of a plain fetch — a larger change.
+* **EUISS and the Swedish National China Centre may show zero upcoming events.**
+  Their scrapers work; those institutes simply hold few public events, or none
+  are currently scheduled. A zero there is genuine.
+* **SIPRI and Aarhus list few public events.** Same as above — a low count is
+  real, not a broken scraper.
 * **Dates are best-effort.** The collector reads the date from each event's
   listing card. Where a site only shows the date on the event's own page
   (some SIPRI series pages), the event appears under "Date to be confirmed".
+  Events dated clearly in the past are dropped during collection.
 * **Topic tagging is keyword-based** and conservative — roughly half of events
   come through untagged (they still show; nothing is hidden). Broadening the
   keyword lists in `collector.py` (`TOPIC_RULES`), or swapping in an LLM
