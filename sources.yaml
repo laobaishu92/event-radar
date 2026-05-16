@@ -1,0 +1,124 @@
+# =============================================================================
+#  EVENT RADAR — SOURCE CONFIGURATION
+# =============================================================================
+#  To ADD an institution: copy a block, fill in the fields.
+#  To REMOVE one: delete its block (or set  enabled: false  to keep it parked).
+#
+#  method:  rss     -> generic feed parser, just needs `url`
+#           scrape  -> generic scraper (keyed by `key`); handles most event pages
+#  type:    university | think_tank | research_institute
+#  region:  UK | Nordic | Continental | Indo-Pacific  (free text; used as a filter)
+#  country: full country name -> drives the flag emoji (see COUNTRY_FLAG in collector.py)
+#  city:    home city -> drives the map pin (see CITY_COORDS in collector.py)
+# =============================================================================
+
+- key: ceri
+  name: Sciences Po — CERI
+  short: CERI
+  enabled: true
+  type: university
+  region: Continental
+  country: France
+  city: Paris
+  method: rss
+  url: https://www.sciencespo.fr/ceri/en/events-rss.xml
+  events_page: https://www.sciencespo.fr/ceri/en/evenements.html
+
+- key: aspi
+  name: Australian Strategic Policy Institute
+  short: ASPI
+  enabled: true
+  type: think_tank
+  region: Indo-Pacific
+  country: Australia
+  city: Canberra
+  method: rss
+  url: https://www.aspi.org.au/events/feed/
+  events_page: https://www.aspi.org.au/events
+
+- key: merics
+  name: Mercator Institute for China Studies
+  short: MERICS
+  enabled: true
+  type: think_tank
+  region: Continental
+  country: Germany
+  city: Berlin
+  method: scrape
+  url: https://merics.org/en/events
+  events_page: https://merics.org/en/events
+
+- key: diis
+  name: Danish Institute for International Studies
+  short: DIIS
+  enabled: true
+  type: research_institute
+  region: Nordic
+  country: Denmark
+  city: Copenhagen
+  method: scrape
+  url: https://www.diis.dk/en/events
+  events_page: https://www.diis.dk/en/events
+
+- key: kcl_lci
+  name: KCL — Lau China Institute
+  short: KCL/LCI
+  enabled: true
+  type: university
+  region: UK
+  country: United Kingdom
+  city: London
+  method: scrape
+  url: https://www.kcl.ac.uk/lci/events
+  events_page: https://www.kcl.ac.uk/lci/events
+
+- key: kcl_war
+  name: KCL — Department of War Studies
+  short: KCL/War
+  enabled: true
+  type: university
+  region: UK
+  country: United Kingdom
+  city: London
+  method: scrape
+  url: https://www.kcl.ac.uk/warstudies/events
+  events_page: https://www.kcl.ac.uk/warstudies/events
+
+- key: sipri
+  name: Stockholm International Peace Research Institute
+  short: SIPRI
+  enabled: true
+  type: research_institute
+  region: Nordic
+  country: Sweden
+  city: Stockholm
+  method: scrape
+  url: https://www.sipri.org/news/upcoming
+  events_page: https://www.sipri.org/news/upcoming
+
+- key: aarhus_ps
+  name: Aarhus University — Political Science
+  short: Aarhus/PS
+  enabled: true
+  type: university
+  region: Nordic
+  country: Denmark
+  city: Aarhus
+  method: scrape
+  url: https://ps.au.dk/en/current/events
+  events_page: https://ps.au.dk/en/current/events
+
+# IISS hard-blocks datacentre IPs (HTTP 403 on the whole domain). It cannot be
+# collected from a GitHub Actions runner. Left disabled, but it still appears on
+# the dashboard as a manual-check card with a link to its events page.
+- key: iiss
+  name: International Institute for Strategic Studies
+  short: IISS
+  enabled: false
+  type: think_tank
+  region: UK
+  country: United Kingdom
+  city: London
+  method: scrape
+  url: https://www.iiss.org/events/
+  events_page: https://www.iiss.org/events/

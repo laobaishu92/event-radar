@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Radar — Strategic &amp; Security Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --paper:#f5f2ea; --paper-2:#efeadf; --card:#fbf9f3;
+  --ink:#1c1a17; --ink-2:#4a443a; --ink-3:#8b8472;
+  --rule:#ddd5c4; --rule-2:#c8bfa8;
+  --signal:#bf3b22; --signal-dk:#8f2c19; --signal-bg:#f1dcd4;
+  --ok:#5a8f4a; --grain-blend:multiply; --grain-op:.5;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --serif:'Newsreader',Georgia,serif;
+}
+html[data-theme="dark"]{
+  --paper:#17150f; --paper-2:#201d15; --card:#221e16;
+  --ink:#ede7d9; --ink-2:#b8b09a; --ink-3:#9a917a;
+  --rule:#332f23; --rule-2:#4a4433;
+  --signal:#e0613f; --signal-dk:#f2926f; --signal-bg:#3a241a;
+  --ok:#7fae5e; --grain-blend:overlay; --grain-op:.55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s,color .25s;
+}
+.grain{
+  position:fixed; inset:0; pointer-events:none; z-index:1200;
+  opacity:var(--grain-op); mix-blend-mode:var(--grain-blend);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+}
+a{color:inherit}
+
+/* ---------- MASTHEAD ---------- */
+.masthead{
+  border-bottom:2.5px solid var(--ink); padding:20px 30px 16px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  flex-wrap:wrap; gap:18px;
+}
+.brand{display:flex; align-items:center; gap:14px}
+.mark{width:38px;height:38px;flex:none}
+.mark circle,.mark line{stroke:var(--signal);fill:none;stroke-width:1.4}
+.mark .blip{fill:var(--signal);stroke:none}
+.wordmark .name{
+  font-family:var(--mono); font-weight:600; font-size:21px;
+  letter-spacing:.14em; text-transform:uppercase;
+}
+.wordmark .name b{color:var(--signal);font-weight:600}
+.wordmark .tag{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.07em;
+  color:var(--ink-3); text-transform:uppercase; margin-top:1px;
+}
+.mast-right{display:flex; align-items:flex-end; gap:18px}
+.status{font-family:var(--mono); font-size:11px; letter-spacing:.04em;
+  text-align:right; color:var(--ink-2);}
+.status .row{display:flex; gap:6px; justify-content:flex-end; margin-top:3px}
+.status .big{font-family:var(--serif); font-size:30px; line-height:1;
+  color:var(--ink); font-weight:600;}
+.status .new-badge{cursor:pointer; color:var(--signal-dk);
+  border-bottom:1px dotted var(--signal);}
+.status .new-badge:hover{background:var(--signal-bg)}
+.theme-btn{
+  font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+  background:var(--card); border:1px solid var(--rule-2); color:var(--ink-2);
+  padding:8px 11px; cursor:pointer; text-transform:uppercase;
+  display:flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.theme-btn:hover{border-color:var(--ink-2); color:var(--ink)}
+
+/* ---------- LAYOUT ---------- */
+.layout{display:flex; align-items:flex-start}
+.sidebar{
+  width:282px; flex:none; padding:24px 22px 60px;
+  border-right:1px solid var(--rule);
+  position:sticky; top:0; max-height:100vh; overflow-y:auto;
+}
+.feed-wrap{flex:1; min-width:0; padding:22px 30px 80px}
+
+/* ---------- SIDEBAR ---------- */
+.s-block{margin-bottom:24px}
+.s-head{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3);
+  border-bottom:1px solid var(--rule); padding-bottom:5px; margin-bottom:11px;
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.hd-act{display:flex; gap:8px}
+.hd-act button{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+  background:none; border:none; color:var(--ink-3); cursor:pointer;
+  text-transform:uppercase; padding:0; border-bottom:1px solid transparent;
+}
+.hd-act button:hover{color:var(--signal-dk); border-bottom-color:var(--signal)}
+.search-box{position:relative}
+.search-box input{
+  width:100%; font-family:var(--mono); font-size:13px;
+  padding:9px 10px 9px 28px; background:var(--card);
+  border:1px solid var(--rule-2); color:var(--ink);
+}
+.search-box input:focus{outline:2px solid var(--signal); outline-offset:-1px}
+.search-box::before{content:"\2315"; position:absolute; left:8px; top:7px;
+  font-size:15px; color:var(--ink-3);}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  font-family:var(--mono); font-size:11px; letter-spacing:.02em;
+  padding:4px 8px; border:1px solid var(--rule-2); cursor:pointer;
+  background:var(--card); color:var(--ink); user-select:none;
+  display:flex; gap:5px; align-items:center; transition:opacity .12s;
+}
+.chip .n{color:var(--ink-3); font-size:10px}
+.chip:hover{border-color:var(--ink-2)}
+.chip.off{opacity:.38; border-style:dashed}
+.chip.mode{background:var(--card); border-color:var(--rule-2)}
+.chip.mode.on{background:var(--signal); border-color:var(--signal); color:#fff}
+.chip.mode.on .n{color:rgba(255,255,255,.7)}
+.toggle-row{display:flex; gap:6px; flex-wrap:wrap}
+/* sources */
+.src-grp{font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); margin:11px 0 4px; padding-left:2px;}
+.src{
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+  padding:5px 6px; user-select:none; transition:opacity .12s;
+}
+.src:hover{background:var(--paper-2)}
+.src.off{opacity:.36}
+.src .fl{font-size:13px;flex:none;width:18px;text-align:center}
+.src .dot{width:6px;height:6px;border-radius:50%;flex:none}
+.src .nm{flex:1; font-family:var(--mono); font-size:11.5px}
+.src .ct{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+.src.manual{cursor:default}
+.src.manual:hover{background:none}
+.src .open{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--signal-dk); text-decoration:none;
+  border:1px solid var(--rule-2); padding:3px 6px;
+}
+.src .open:hover{border-color:var(--signal)}
+.reset{
+  font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+  text-transform:uppercase; background:none; border:1px solid var(--rule-2);
+  padding:8px 12px; cursor:pointer; color:var(--ink-2); width:100%; margin-top:4px;
+}
+.reset:hover{border-color:var(--signal); color:var(--signal-dk)}
+
+/* ---------- MAP ---------- */
+.mappanel{border:1px solid var(--rule); margin-bottom:18px; background:var(--paper-2)}
+.maphead{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--rule);
+}
+.maphead.collapsed{border-bottom:none}
+.maphead .t{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-2); display:flex; gap:10px; align-items:baseline;}
+.maphead .t b{color:var(--ink); font-weight:600}
+.maphead .t .om{color:var(--ink-3)}
+.maphead .caret{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+#map{height:320px; width:100%; background:var(--paper-2)}
+.mappanel.collapsed #map{display:none}
+.pin{
+  width:100%;height:100%;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-weight:600;font-size:12px;
+  background:var(--signal);color:#fff;border:2px solid var(--paper);
+  box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer;transition:transform .12s;
+}
+.pin.on{background:var(--ink);transform:scale(1.14)}
+.pin.dim{opacity:.4}
+.leaflet-container{font-family:var(--mono)}
+.leaflet-bar a{background:var(--card);color:var(--ink-2);border-color:var(--rule-2)}
+.leaflet-bar a:hover{background:var(--paper-2)}
+.leaflet-tooltip{
+  font-family:var(--mono);font-size:10.5px;background:var(--ink);color:var(--paper);
+  border:none;box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.leaflet-tooltip-top:before{border-top-color:var(--ink)}
+.leaflet-control-attribution{
+  font-family:var(--mono);font-size:8.5px;background:var(--card)!important;color:var(--ink-3);
+}
+.leaflet-control-attribution a{color:var(--ink-3)}
+
+/* ---------- RESULT BAR ---------- */
+.resultbar{
+  display:flex; justify-content:space-between; align-items:baseline;
+  flex-wrap:wrap; gap:10px; padding-bottom:10px;
+  border-bottom:1px solid var(--rule); margin-bottom:6px;
+}
+.resultbar .count{font-family:var(--serif); font-size:17px}
+.resultbar .count b{color:var(--signal-dk); font-weight:600}
+.resultbar .meta{font-family:var(--mono); font-size:10.5px; color:var(--ink-3);
+  letter-spacing:.04em; text-transform:uppercase; display:flex; gap:8px; align-items:center;}
+.citytag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.04em;
+  background:var(--ink); color:var(--paper); padding:3px 7px; cursor:pointer;
+  text-transform:none;
+}
+.citytag:hover{background:var(--signal)}
+
+/* ---------- MONTH DIVIDER ---------- */
+.month{display:flex; align-items:center; gap:12px; margin:24px 0 6px; padding-top:6px}
+.month:first-child{margin-top:8px}
+.month .lbl{font-family:var(--mono); font-size:12px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink); font-weight:600; white-space:nowrap;}
+.month .ln{flex:1; height:1px; background:var(--rule-2)}
+.month .ct{font-family:var(--mono); font-size:10.5px; color:var(--ink-3)}
+
+/* ---------- EVENT ROW ---------- */
+.evt{
+  display:flex; gap:18px; padding:15px 6px 15px 12px;
+  border-bottom:1px solid var(--rule); position:relative;
+  opacity:0; animation:rise .4s ease forwards;
+}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.evt:hover{background:var(--card)}
+.evt.new{border-left:2px solid var(--signal); margin-left:-2px; padding-left:14px}
+.datebox{width:56px;flex:none;text-align:center;padding-top:2px}
+.datebox .d{font-family:var(--serif);font-size:30px;line-height:.95;font-weight:600}
+.datebox .m{font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-2);margin-top:3px}
+.datebox .wd{font-family:var(--mono);font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);margin-top:1px}
+.datebox.tbc .d{font-size:15px;font-family:var(--mono);color:var(--ink-3);
+  padding-top:9px;letter-spacing:.05em}
+.evt-body{flex:1;min-width:0}
+.evt-title{font-family:var(--serif); font-size:19px; line-height:1.28;
+  font-weight:500; text-decoration:none; display:inline;}
+.evt-title:hover{text-decoration:underline;text-decoration-color:var(--signal);
+  text-underline-offset:3px}
+.evt-title .ext{font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.newtag{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;
+  background:var(--signal);color:#fff;padding:2px 5px;vertical-align:2px;margin-right:7px;}
+.evt-meta{font-family:var(--mono);font-size:11px;color:var(--ink-2);
+  margin-top:7px;display:flex;flex-wrap:wrap;gap:5px 9px;align-items:center;}
+.evt-meta .inst{color:var(--ink);font-weight:500;cursor:pointer}
+.evt-meta .inst:hover{color:var(--signal-dk)}
+.evt-meta .fl{font-size:12px}
+.evt-meta .sep{color:var(--rule-2)}
+.evt-meta .typ{font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  border:1px solid var(--rule-2);padding:1px 4px;color:var(--ink-3);}
+.evt-meta .fmt-online{color:var(--signal-dk)}
+.evt-meta .fmt-hybrid{color:var(--ink)}
+.topics{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tp{font-family:var(--mono);font-size:10px;letter-spacing:.02em;
+  padding:2px 6px;border:1px solid var(--rule-2);color:var(--ink-2);
+  cursor:pointer;background:var(--paper);}
+.tp:hover{border-color:var(--signal);color:var(--signal-dk)}
+
+/* ---------- EMPTY ---------- */
+.empty{text-align:center;padding:70px 20px;color:var(--ink-3);
+  font-family:var(--serif);font-size:20px;font-style:italic;}
+.empty .sub{font-family:var(--mono);font-size:11px;font-style:normal;
+  margin-top:8px;letter-spacing:.04em}
+
+/* ---------- FOOTER ---------- */
+.foot{border-top:1px solid var(--rule); margin:0 30px; padding:18px 0 40px;
+  font-family:var(--mono); font-size:10.5px; color:var(--ink-3);
+  letter-spacing:.03em; line-height:1.8;}
+.foot b{color:var(--ink-2);font-weight:500}
+
+/* ---------- MOBILE ---------- */
+.s-toggle{display:none}
+@media(max-width:860px){
+  .masthead{padding:16px 18px 12px}
+  .layout{flex-direction:column}
+  .sidebar{width:100%;position:static;max-height:none;border-right:none;
+    border-bottom:1px solid var(--rule);padding:18px;display:none;}
+  .sidebar.open{display:block}
+  .feed-wrap{padding:18px}
+  .s-toggle{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;padding:10px 18px;background:var(--paper-2);
+    border:none;border-bottom:1px solid var(--rule);width:100%;cursor:pointer;color:var(--ink);}
+  .foot{margin:0 18px}
+  #map{height:260px}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="masthead">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="17"/><circle cx="20" cy="20" r="10.5"/>
+      <circle cx="20" cy="20" r="4"/>
+      <line x1="20" y1="1" x2="20" y2="39"/><line x1="1" y1="20" x2="39" y2="20"/>
+      <circle class="blip" cx="29.5" cy="12" r="2.6"/>
+    </svg>
+    <div class="wordmark">
+      <div class="name">Event&nbsp;<b>Radar</b></div>
+      <div class="tag">Strategic &amp; security events · monitored weekly</div>
+    </div>
+  </div>
+  <div class="mast-right">
+    <div class="status" id="status"></div>
+    <button class="theme-btn" id="themeBtn">Dark</button>
+  </div>
+</header>
+
+<button class="s-toggle" id="sToggle">&#9662; Filters</button>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="s-block">
+      <div class="s-head">Search</div>
+      <div class="search-box"><input id="search" type="text" placeholder="title, institution, keyword…" autocomplete="off"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head">View</div>
+      <div class="toggle-row" id="quick"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Topic</span><span class="hd-act" data-facet="topics"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="topics"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Format</span><span class="hd-act" data-facet="formats"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="formats"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Region</span><span class="hd-act" data-facet="regions"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="regions"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Institution type</span><span class="hd-act" data-facet="types"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="types"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Sources</span><span class="hd-act" data-facet="sources"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div id="sources"></div>
+    </div>
+    <button class="reset" id="reset">&#8634; Reset all filters</button>
+  </aside>
+
+  <main class="feed-wrap">
+    <div class="mappanel" id="mappanel">
+      <div class="maphead" id="maphead">
+        <span class="t"><b id="mapInfo">Map</b><span class="om" id="mapOnline"></span></span>
+        <span class="caret" id="mapCaret">&#9652; hide</span>
+      </div>
+      <div id="map"></div>
+    </div>
+    <div class="resultbar">
+      <div class="count" id="rcount"></div>
+      <div class="meta" id="rmeta"></div>
+    </div>
+    <div id="feed"></div>
+  </main>
+</div>
+
+<footer class="foot" id="foot"></footer>
+
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+"use strict";
+const DATA = JSON.parse(document.getElementById('payload').textContent);
+const TODAY = new Date(DATA.today + 'T00:00:00');
+const WEEK_AGO = new Date(TODAY); WEEK_AGO.setDate(WEEK_AGO.getDate()-7);
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TYPELABEL={university:'University',think_tank:'Think tank',research_institute:'Research institute'};
+const FMTLABEL={'in-person':'In person',online:'Online',hybrid:'Hybrid'};
+const $=s=>document.querySelector(s);
+
+/* ---------- THEME ---------- */
+function setTheme(t){
+  document.documentElement.dataset.theme=t;
+  $('#themeBtn').textContent = t==='dark' ? 'Light' : 'Dark';
+  try{ localStorage.setItem('radar-theme',t); }catch(e){}
+  if(window._map) setTiles();
+}
+(function initTheme(){
+  let t=null;
+  try{ t=localStorage.getItem('radar-theme'); }catch(e){}
+  if(!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light';
+  setTheme(t);
+})();
+$('#themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+/* ---------- EVENTS ---------- */
+const EVENTS = DATA.events.map(e=>{
+  const d = e.date ? new Date(e.date+'T00:00:00') : null;
+  const fs = new Date(e.first_seen+'T00:00:00');
+  return Object.assign({},e,{_d:d,_new:fs>=WEEK_AGO});
+}).filter(e=> !e._d || e._d>=TODAY);
+
+/* ---------- FILTER STATE (everything starts ON — high recall) ---------- */
+const F={ q:'', newOnly:false, window:0, city:null,
+          topics:new Set(), formats:new Set(), regions:new Set(),
+          types:new Set(), sources:new Set() };
+
+function valuesOf(field,multi){
+  const m={};
+  EVENTS.forEach(e=>{
+    const vals = multi ? (e[field].length?e[field]:['— untagged']) : [e[field]];
+    vals.forEach(v=>m[v]=(m[v]||0)+1);
+  });
+  return m;
+}
+const C_TOPIC =valuesOf('topics',true);
+const C_FORMAT=valuesOf('format',false);
+const C_REGION=valuesOf('region',false);
+const C_TYPE  =valuesOf('type',false);
+Object.keys(C_TOPIC ).forEach(v=>F.topics.add(v));
+Object.keys(C_FORMAT).forEach(v=>F.formats.add(v));
+Object.keys(C_REGION).forEach(v=>F.regions.add(v));
+Object.keys(C_TYPE  ).forEach(v=>F.types.add(v));
+DATA.sources.forEach(s=>F.sources.add(s.short));
+
+/* ---------- SIDEBAR ---------- */
+const chipRegistry=[];   // {el,set,val} — for syncing on/off classes
+function buildChips(containerId,countMap,set,labelFn,order){
+  const wrap=document.getElementById(containerId);
+  const keys=order||Object.keys(countMap).sort((a,b)=>countMap[b]-countMap[a]);
+  keys.forEach(v=>{
+    const c=document.createElement('div');
+    c.className='chip';
+    c.innerHTML=`<span>${labelFn?labelFn(v):v}</span><span class="n">${countMap[v]}</span>`;
+    c.onclick=()=>{ set.has(v)?set.delete(v):set.add(v); render(); };
+    chipRegistry.push({el:c,set,val:v});
+    wrap.appendChild(c);
+  });
+}
+buildChips('topics', C_TOPIC,  F.topics);
+buildChips('formats',C_FORMAT, F.formats, v=>FMTLABEL[v]||v,
+           ['in-person','online','hybrid'].filter(v=>C_FORMAT[v]));
+buildChips('regions',C_REGION, F.regions);
+buildChips('types',  C_TYPE,   F.types, v=>TYPELABEL[v]||v,
+           ['university','think_tank','research_institute'].filter(v=>C_TYPE[v]));
+
+/* quick toggles (modes, not facets) */
+const qWrap=$('#quick');
+const newChip=document.createElement('div');
+newChip.className='chip mode';
+newChip.innerHTML=`<span>&#9733; New this week</span><span class="n">${EVENTS.filter(e=>e._new).length}</span>`;
+newChip.onclick=()=>{F.newOnly=!F.newOnly;render();};
+qWrap.appendChild(newChip);
+const winChips={};
+[['Next 30 days',30],['Next 90 days',90]].forEach(([lbl,n])=>{
+  const c=document.createElement('div'); c.className='chip mode';
+  c.innerHTML=`<span>${lbl}</span>`;
+  c.onclick=()=>{F.window=F.window===n?0:n;render();};
+  winChips[n]=c; qWrap.appendChild(c);
+});
+
+/* sources — toggle rows + manual-check cards */
+const srcWrap=$('#sources');
+const byType={};
+DATA.sources.forEach(s=>{(byType[s.type]=byType[s.type]||[]).push(s);});
+['university','think_tank','research_institute'].forEach(ty=>{
+  if(!byType[ty]) return;
+  const g=document.createElement('div'); g.className='src-grp';
+  g.textContent=TYPELABEL[ty]; srcWrap.appendChild(g);
+  byType[ty].forEach(s=>{
+    const row=document.createElement('div');
+    if(s.status==='manual'){
+      row.className='src manual';
+      row.innerHTML=`<span class="fl">${s.flag}</span>
+        <span class="dot" style="background:var(--rule-2)"></span>
+        <span class="nm">${s.short}</span>
+        <a class="open" href="${s.events_page}" target="_blank" rel="noopener">check &#8599;</a>`;
+      row.title=s.name+' — '+s.note;
+    }else{
+      const dotc=s.status==='error'?'var(--signal)':s.status==='ok'?'var(--ok)':'var(--rule-2)';
+      row.className='src';
+      row.innerHTML=`<span class="fl">${s.flag}</span>
+        <span class="dot" style="background:${dotc}"></span>
+        <span class="nm">${s.short}</span>
+        <span class="ct">${s.count}</span>`;
+      row.title=s.name+(s.status==='empty'?' — live, no upcoming events listed':
+                        s.status==='error'?' — collection failed':'');
+      row.onclick=()=>{F.sources.has(s.short)?F.sources.delete(s.short):F.sources.add(s.short);render();};
+      chipRegistry.push({el:row,set:F.sources,val:s.short});
+    }
+    srcWrap.appendChild(row);
+  });
+});
+
+/* all / none per section */
+const FACETSETS={topics:F.topics,formats:F.formats,regions:F.regions,
+                 types:F.types,sources:F.sources};
+const FACETALL ={topics:Object.keys(C_TOPIC),formats:Object.keys(C_FORMAT),
+                 regions:Object.keys(C_REGION),types:Object.keys(C_TYPE),
+                 sources:DATA.sources.map(s=>s.short)};
+document.querySelectorAll('.hd-act').forEach(h=>{
+  const f=h.dataset.facet;
+  h.querySelector('[data-act=all]').onclick =()=>{
+    FACETSETS[f].clear(); FACETALL[f].forEach(v=>FACETSETS[f].add(v)); render();};
+  h.querySelector('[data-act=none]').onclick=()=>{ FACETSETS[f].clear(); render();};
+});
+
+/* ---------- FILTERING ---------- */
+function passNonGeo(e){
+  if(!F.sources.has(e.institution)) return false;
+  if(F.newOnly && !e._new) return false;
+  if(F.window && e._d && e._d>new Date(TODAY.getTime()+F.window*864e5)) return false;
+  const evt = e.topics.length?e.topics:['— untagged'];
+  if(!evt.some(t=>F.topics.has(t))) return false;
+  if(!F.formats.has(e.format)) return false;
+  if(!F.regions.has(e.region)) return false;
+  if(!F.types.has(e.type)) return false;
+  if(F.q){
+    const hay=(e.title+' '+e.institution+' '+e.summary+' '+e.topics.join(' ')+' '+(e.city||'')).toLowerCase();
+    if(!hay.includes(F.q)) return false;
+  }
+  return true;
+}
+function visible(){ return EVENTS.filter(e=>passNonGeo(e)&&(!F.city||e.city===F.city)); }
+
+/* ---------- MAP ---------- */
+let tileLayer,markerLayer,lastCityKey='';
+function setTiles(){
+  if(!window._map) return;
+  if(tileLayer) window._map.removeLayer(tileLayer);
+  const dark=document.documentElement.dataset.theme==='dark';
+  tileLayer=L.tileLayer(
+    dark? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {maxZoom:11,subdomains:'abcd',attribution:'&copy; OpenStreetMap &copy; CARTO'});
+  tileLayer.addTo(window._map); tileLayer.bringToBack();
+}
+function initMap(){
+  window._map=L.map('map',{zoomControl:true,scrollWheelZoom:false,minZoom:2});
+  markerLayer=L.layerGroup().addTo(window._map);
+  setTiles();
+  window._map.setView([52,8],4);
+}
+function renderMap(){
+  if(!window._map) return;
+  markerLayer.clearLayers();
+  const base=EVENTS.filter(e=>passNonGeo(e)&&e.lat!=null&&e.format!=='online');
+  const online=EVENTS.filter(e=>passNonGeo(e)&&e.format==='online').length;
+  const byCity={};
+  base.forEach(e=>{(byCity[e.city]=byCity[e.city]||{city:e.city,lat:e.lat,lng:e.lng,n:0}).n++;});
+  const cities=Object.values(byCity);
+  cities.forEach(c=>{
+    const active=F.city===c.city;
+    const sz=26+Math.min(c.n,18)*1.5;
+    const icon=L.divIcon({className:'',iconSize:[sz,sz],
+      html:`<div class="pin ${active?'on':''} ${F.city&&!active?'dim':''}">${c.n}</div>`});
+    const m=L.marker([c.lat,c.lng],{icon}).addTo(markerLayer);
+    m.bindTooltip(c.city+' · '+c.n+' event'+(c.n>1?'s':''),{direction:'top',offset:[0,-sz/2]});
+    m.on('click',()=>{F.city=active?null:c.city;render();});
+  });
+  $('#mapInfo').textContent=`${base.length} mapped event${base.length!==1?'s':''} · ${cities.length} cit${cities.length!==1?'ies':'y'}`;
+  $('#mapOnline').textContent=online?`+ ${online} online`:'';
+  const key=cities.map(c=>c.city).sort().join(',');
+  if(key && key!==lastCityKey){
+    lastCityKey=key;
+    const grp=L.featureGroup(cities.map(c=>L.marker([c.lat,c.lng])));
+    try{ window._map.fitBounds(grp.getBounds().pad(0.4),{maxZoom:7}); }catch(e){}
+  }
+}
+
+/* ---------- RENDER ---------- */
+function syncChips(){
+  chipRegistry.forEach(({el,set,val})=>el.classList.toggle('off',!set.has(val)));
+  newChip.classList.toggle('on',F.newOnly);
+  Object.entries(winChips).forEach(([n,c])=>c.classList.toggle('on',F.window==n));
+}
+function fmtDateBox(e){
+  if(!e._d) return `<div class="datebox tbc"><div class="d">TBC</div></div>`;
+  const d=e._d; let day=String(d.getDate());
+  if(e.date_end){const e2=new Date(e.date_end+'T00:00:00'); if(e2>d) day=d.getDate()+'\u2013'+e2.getDate();}
+  return `<div class="datebox"><div class="d">${day}</div>
+    <div class="m">${MONTHS[d.getMonth()]}</div><div class="wd">${WD[d.getDay()]}</div></div>`;
+}
+function facetSummary(){
+  const out=[];
+  const chk=(set,all,noun)=>{
+    if(set.size===0) out.push('no '+noun);
+    else if(set.size<all) out.push(set.size+'/'+all+' '+noun);
+  };
+  chk(F.topics,Object.keys(C_TOPIC).length,'topics');
+  chk(F.formats,Object.keys(C_FORMAT).length,'formats');
+  chk(F.regions,Object.keys(C_REGION).length,'regions');
+  chk(F.types,Object.keys(C_TYPE).length,'types');
+  chk(F.sources,DATA.sources.length,'sources');
+  if(F.newOnly) out.push('new only');
+  if(F.window) out.push('\u2264'+F.window+'d');
+  if(F.q) out.push('\u201c'+F.q+'\u201d');
+  return out;
+}
+function render(){
+  syncChips();
+  const vis=visible();
+  // masthead
+  $('#status').innerHTML=
+    `<div><span class="big">${EVENTS.length}</span> events tracked</div>
+     <div class="row"><span class="new-badge" id="nb">${EVENTS.filter(e=>e._new).length} new this week</span></div>
+     <div class="row">updated ${DATA.generated}</div>`;
+  $('#nb').onclick=()=>{F.newOnly=!F.newOnly;render();};
+  // result bar
+  $('#rcount').innerHTML=`<b>${vis.length}</b> event${vis.length!==1?'s':''} shown`;
+  const rmeta=$('#rmeta'); rmeta.innerHTML='';
+  if(F.city){
+    const tag=document.createElement('span'); tag.className='citytag';
+    tag.textContent='\u25C9 '+F.city+'  \u2715';
+    tag.onclick=()=>{F.city=null;render();};
+    rmeta.appendChild(tag);
+  }
+  const sum=facetSummary();
+  const txt=document.createElement('span');
+  txt.textContent = sum.length? 'filtered · '+sum.join(' · ') : 'no filters · all upcoming';
+  rmeta.appendChild(txt);
+  // feed
+  const feed=$('#feed'); feed.innerHTML='';
+  if(!vis.length){
+    feed.innerHTML=`<div class="empty">Nothing matches these filters.
+      <div class="sub">Loosen a filter or hit reset.</div></div>`;
+  }else{
+    let cur=null,i=0;
+    vis.forEach(e=>{
+      const mk=e._d? e._d.getFullYear()+'-'+e._d.getMonth():'tbc';
+      if(mk!==cur){
+        cur=mk;
+        const lbl=e._d? MONTHS[e._d.getMonth()].toUpperCase()+' '+e._d.getFullYear():'DATE TO BE CONFIRMED';
+        const cnt=vis.filter(x=>(x._d?x._d.getFullYear()+'-'+x._d.getMonth():'tbc')===mk).length;
+        const m=document.createElement('div'); m.className='month';
+        m.innerHTML=`<span class="lbl">${lbl}</span><span class="ln"></span><span class="ct">${cnt}</span>`;
+        feed.appendChild(m);
+      }
+      const row=document.createElement('div');
+      row.className='evt'+(e._new?' new':'');
+      row.style.animationDelay=Math.min(i*20,560)+'ms'; i++;
+      const tps=e.topics.map(t=>`<span class="tp" data-t="${t}">${t}</span>`).join('');
+      const fcls=e.format==='online'?'fmt-online':e.format==='hybrid'?'fmt-hybrid':'';
+      const tm=e.time?`<span class="sep">/</span><span>${e.time}</span>`:'';
+      const loc=e.location&&e.location!==e.city?`<span class="sep">/</span><span>${e.location}</span>`:'';
+      row.innerHTML=`
+        ${fmtDateBox(e)}
+        <div class="evt-body">
+          <a class="evt-title" href="${e.url}" target="_blank" rel="noopener">
+            ${e._new?'<span class="newtag">NEW</span>':''}${e.title}
+            <span class="ext">\u2197</span></a>
+          <div class="evt-meta">
+            <span class="fl">${e.flag}</span>
+            <span class="inst" data-inst="${e.institution}">${e.institution}</span>
+            <span class="typ">${TYPELABEL[e.type]||e.type}</span>
+            <span class="sep">/</span><span>${e.city||e.region}</span>
+            <span class="sep">/</span><span class="${fcls}">${FMTLABEL[e.format]||e.format}</span>
+            ${tm}${loc}
+          </div>
+          ${tps?`<div class="topics">${tps}</div>`:''}
+        </div>`;
+      // row interactions: isolate topic / institution
+      row.querySelectorAll('.tp').forEach(el=>el.onclick=ev=>{
+        ev.preventDefault();
+        F.topics.clear(); F.topics.add(el.dataset.t); render();
+      });
+      const inst=row.querySelector('.inst');
+      if(inst) inst.onclick=()=>{ F.sources.clear(); F.sources.add(inst.dataset.inst); render(); };
+      feed.appendChild(row);
+    });
+  }
+  renderMap();
+}
+
+/* ---------- FOOTER ---------- */
+(function(){
+  const ok=DATA.sources.filter(s=>s.status==='ok').length;
+  const live=DATA.sources.filter(s=>s.status!=='manual').length;
+  const parts=DATA.sources.map(s=>`${s.flag} ${s.short} ${s.status==='manual'?'(manual)':s.count}`).join('   ');
+  $('#foot').innerHTML=
+    `<b>${ok}/${live} sources live</b> · generated ${DATA.generated}<br>`+parts+
+    `<br><br>Edit <b>sources.yaml</b> to add or remove institutions. `+
+    `“New this week” = first appeared in the last 7 days. Past events are hidden automatically. `+
+    `Online events are listed but not pinned on the map.`;
+})();
+
+/* ---------- WIRING ---------- */
+let deb;
+$('#search').oninput=ev=>{clearTimeout(deb);deb=setTimeout(()=>{F.q=ev.target.value.trim().toLowerCase();render();},150);};
+$('#reset').onclick=()=>{
+  F.q='';F.newOnly=false;F.window=0;F.city=null;
+  Object.entries(FACETSETS).forEach(([f,set])=>{set.clear();FACETALL[f].forEach(v=>set.add(v));});
+  $('#search').value='';
+  render();
+};
+$('#sToggle').onclick=()=>{
+  const sb=$('#sidebar'); sb.classList.toggle('open');
+  $('#sToggle').innerHTML=(sb.classList.contains('open')?'\u25B4':'\u25BE')+' Filters';
+};
+$('#maphead').onclick=()=>{
+  const p=$('#mappanel'),collapsed=p.classList.toggle('collapsed');
+  $('#maphead').classList.toggle('collapsed',collapsed);
+  $('#mapCaret').innerHTML=collapsed?'\u25BE show':'\u25B4 hide';
+  if(!collapsed && window._map) setTimeout(()=>{window._map.invalidateSize();renderMap();},60);
+};
+
+initMap();
+render();
+})();
+</script>
+</body>
+</html>

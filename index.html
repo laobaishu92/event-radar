@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Radar — Strategic &amp; Security Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --paper:#f5f2ea; --paper-2:#efeadf; --card:#fbf9f3;
+  --ink:#1c1a17; --ink-2:#4a443a; --ink-3:#8b8472;
+  --rule:#ddd5c4; --rule-2:#c8bfa8;
+  --signal:#bf3b22; --signal-dk:#8f2c19; --signal-bg:#f1dcd4;
+  --ok:#5a8f4a; --grain-blend:multiply; --grain-op:.5;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --serif:'Newsreader',Georgia,serif;
+}
+html[data-theme="dark"]{
+  --paper:#17150f; --paper-2:#201d15; --card:#221e16;
+  --ink:#ede7d9; --ink-2:#b8b09a; --ink-3:#9a917a;
+  --rule:#332f23; --rule-2:#4a4433;
+  --signal:#e0613f; --signal-dk:#f2926f; --signal-bg:#3a241a;
+  --ok:#7fae5e; --grain-blend:overlay; --grain-op:.55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s,color .25s;
+}
+.grain{
+  position:fixed; inset:0; pointer-events:none; z-index:1200;
+  opacity:var(--grain-op); mix-blend-mode:var(--grain-blend);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+}
+a{color:inherit}
+
+/* ---------- MASTHEAD ---------- */
+.masthead{
+  border-bottom:2.5px solid var(--ink); padding:20px 30px 16px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  flex-wrap:wrap; gap:18px;
+}
+.brand{display:flex; align-items:center; gap:14px}
+.mark{width:38px;height:38px;flex:none}
+.mark circle,.mark line{stroke:var(--signal);fill:none;stroke-width:1.4}
+.mark .blip{fill:var(--signal);stroke:none}
+.wordmark .name{
+  font-family:var(--mono); font-weight:600; font-size:21px;
+  letter-spacing:.14em; text-transform:uppercase;
+}
+.wordmark .name b{color:var(--signal);font-weight:600}
+.wordmark .tag{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.07em;
+  color:var(--ink-3); text-transform:uppercase; margin-top:1px;
+}
+.mast-right{display:flex; align-items:flex-end; gap:18px}
+.status{font-family:var(--mono); font-size:11px; letter-spacing:.04em;
+  text-align:right; color:var(--ink-2);}
+.status .row{display:flex; gap:6px; justify-content:flex-end; margin-top:3px}
+.status .big{font-family:var(--serif); font-size:30px; line-height:1;
+  color:var(--ink); font-weight:600;}
+.status .new-badge{cursor:pointer; color:var(--signal-dk);
+  border-bottom:1px dotted var(--signal);}
+.status .new-badge:hover{background:var(--signal-bg)}
+.theme-btn{
+  font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+  background:var(--card); border:1px solid var(--rule-2); color:var(--ink-2);
+  padding:8px 11px; cursor:pointer; text-transform:uppercase;
+  display:flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.theme-btn:hover{border-color:var(--ink-2); color:var(--ink)}
+
+/* ---------- LAYOUT ---------- */
+.layout{display:flex; align-items:flex-start}
+.sidebar{
+  width:282px; flex:none; padding:24px 22px 60px;
+  border-right:1px solid var(--rule);
+  position:sticky; top:0; max-height:100vh; overflow-y:auto;
+}
+.feed-wrap{flex:1; min-width:0; padding:22px 30px 80px}
+
+/* ---------- SIDEBAR ---------- */
+.s-block{margin-bottom:24px}
+.s-head{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3);
+  border-bottom:1px solid var(--rule); padding-bottom:5px; margin-bottom:11px;
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.hd-act{display:flex; gap:8px}
+.hd-act button{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+  background:none; border:none; color:var(--ink-3); cursor:pointer;
+  text-transform:uppercase; padding:0; border-bottom:1px solid transparent;
+}
+.hd-act button:hover{color:var(--signal-dk); border-bottom-color:var(--signal)}
+.search-box{position:relative}
+.search-box input{
+  width:100%; font-family:var(--mono); font-size:13px;
+  padding:9px 10px 9px 28px; background:var(--card);
+  border:1px solid var(--rule-2); color:var(--ink);
+}
+.search-box input:focus{outline:2px solid var(--signal); outline-offset:-1px}
+.search-box::before{content:"\2315"; position:absolute; left:8px; top:7px;
+  font-size:15px; color:var(--ink-3);}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  font-family:var(--mono); font-size:11px; letter-spacing:.02em;
+  padding:4px 8px; border:1px solid var(--rule-2); cursor:pointer;
+  background:var(--card); color:var(--ink); user-select:none;
+  display:flex; gap:5px; align-items:center; transition:opacity .12s;
+}
+.chip .n{color:var(--ink-3); font-size:10px}
+.chip:hover{border-color:var(--ink-2)}
+.chip.off{opacity:.38; border-style:dashed}
+.chip.mode{background:var(--card); border-color:var(--rule-2)}
+.chip.mode.on{background:var(--signal); border-color:var(--signal); color:#fff}
+.chip.mode.on .n{color:rgba(255,255,255,.7)}
+.toggle-row{display:flex; gap:6px; flex-wrap:wrap}
+/* sources */
+.src-grp{font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); margin:11px 0 4px; padding-left:2px;}
+.src{
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+  padding:5px 6px; user-select:none; transition:opacity .12s;
+}
+.src:hover{background:var(--paper-2)}
+.src.off{opacity:.36}
+.src .fl{font-size:13px;flex:none;width:18px;text-align:center}
+.src .dot{width:6px;height:6px;border-radius:50%;flex:none}
+.src .nm{flex:1; font-family:var(--mono); font-size:11.5px}
+.src .ct{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+.src.manual{cursor:default}
+.src.manual:hover{background:none}
+.src .open{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--signal-dk); text-decoration:none;
+  border:1px solid var(--rule-2); padding:3px 6px;
+}
+.src .open:hover{border-color:var(--signal)}
+.reset{
+  font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+  text-transform:uppercase; background:none; border:1px solid var(--rule-2);
+  padding:8px 12px; cursor:pointer; color:var(--ink-2); width:100%; margin-top:4px;
+}
+.reset:hover{border-color:var(--signal); color:var(--signal-dk)}
+
+/* ---------- MAP ---------- */
+.mappanel{border:1px solid var(--rule); margin-bottom:18px; background:var(--paper-2)}
+.maphead{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--rule);
+}
+.maphead.collapsed{border-bottom:none}
+.maphead .t{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-2); display:flex; gap:10px; align-items:baseline;}
+.maphead .t b{color:var(--ink); font-weight:600}
+.maphead .t .om{color:var(--ink-3)}
+.maphead .caret{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+#map{height:320px; width:100%; background:var(--paper-2)}
+.mappanel.collapsed #map{display:none}
+.pin{
+  width:100%;height:100%;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-weight:600;font-size:12px;
+  background:var(--signal);color:#fff;border:2px solid var(--paper);
+  box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer;transition:transform .12s;
+}
+.pin.on{background:var(--ink);transform:scale(1.14)}
+.pin.dim{opacity:.4}
+.leaflet-container{font-family:var(--mono)}
+.leaflet-bar a{background:var(--card);color:var(--ink-2);border-color:var(--rule-2)}
+.leaflet-bar a:hover{background:var(--paper-2)}
+.leaflet-tooltip{
+  font-family:var(--mono);font-size:10.5px;background:var(--ink);color:var(--paper);
+  border:none;box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.leaflet-tooltip-top:before{border-top-color:var(--ink)}
+.leaflet-control-attribution{
+  font-family:var(--mono);font-size:8.5px;background:var(--card)!important;color:var(--ink-3);
+}
+.leaflet-control-attribution a{color:var(--ink-3)}
+
+/* ---------- RESULT BAR ---------- */
+.resultbar{
+  display:flex; justify-content:space-between; align-items:baseline;
+  flex-wrap:wrap; gap:10px; padding-bottom:10px;
+  border-bottom:1px solid var(--rule); margin-bottom:6px;
+}
+.resultbar .count{font-family:var(--serif); font-size:17px}
+.resultbar .count b{color:var(--signal-dk); font-weight:600}
+.resultbar .meta{font-family:var(--mono); font-size:10.5px; color:var(--ink-3);
+  letter-spacing:.04em; text-transform:uppercase; display:flex; gap:8px; align-items:center;}
+.citytag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.04em;
+  background:var(--ink); color:var(--paper); padding:3px 7px; cursor:pointer;
+  text-transform:none;
+}
+.citytag:hover{background:var(--signal)}
+
+/* ---------- MONTH DIVIDER ---------- */
+.month{display:flex; align-items:center; gap:12px; margin:24px 0 6px; padding-top:6px}
+.month:first-child{margin-top:8px}
+.month .lbl{font-family:var(--mono); font-size:12px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink); font-weight:600; white-space:nowrap;}
+.month .ln{flex:1; height:1px; background:var(--rule-2)}
+.month .ct{font-family:var(--mono); font-size:10.5px; color:var(--ink-3)}
+
+/* ---------- EVENT ROW ---------- */
+.evt{
+  display:flex; gap:18px; padding:15px 6px 15px 12px;
+  border-bottom:1px solid var(--rule); position:relative;
+  opacity:0; animation:rise .4s ease forwards;
+}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.evt:hover{background:var(--card)}
+.evt.new{border-left:2px solid var(--signal); margin-left:-2px; padding-left:14px}
+.datebox{width:56px;flex:none;text-align:center;padding-top:2px}
+.datebox .d{font-family:var(--serif);font-size:30px;line-height:.95;font-weight:600}
+.datebox .m{font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-2);margin-top:3px}
+.datebox .wd{font-family:var(--mono);font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);margin-top:1px}
+.datebox.tbc .d{font-size:15px;font-family:var(--mono);color:var(--ink-3);
+  padding-top:9px;letter-spacing:.05em}
+.evt-body{flex:1;min-width:0}
+.evt-title{font-family:var(--serif); font-size:19px; line-height:1.28;
+  font-weight:500; text-decoration:none; display:inline;}
+.evt-title:hover{text-decoration:underline;text-decoration-color:var(--signal);
+  text-underline-offset:3px}
+.evt-title .ext{font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.newtag{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;
+  background:var(--signal);color:#fff;padding:2px 5px;vertical-align:2px;margin-right:7px;}
+.evt-meta{font-family:var(--mono);font-size:11px;color:var(--ink-2);
+  margin-top:7px;display:flex;flex-wrap:wrap;gap:5px 9px;align-items:center;}
+.evt-meta .inst{color:var(--ink);font-weight:500;cursor:pointer}
+.evt-meta .inst:hover{color:var(--signal-dk)}
+.evt-meta .fl{font-size:12px}
+.evt-meta .sep{color:var(--rule-2)}
+.evt-meta .typ{font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  border:1px solid var(--rule-2);padding:1px 4px;color:var(--ink-3);}
+.evt-meta .fmt-online{color:var(--signal-dk)}
+.evt-meta .fmt-hybrid{color:var(--ink)}
+.topics{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tp{font-family:var(--mono);font-size:10px;letter-spacing:.02em;
+  padding:2px 6px;border:1px solid var(--rule-2);color:var(--ink-2);
+  cursor:pointer;background:var(--paper);}
+.tp:hover{border-color:var(--signal);color:var(--signal-dk)}
+
+/* ---------- EMPTY ---------- */
+.empty{text-align:center;padding:70px 20px;color:var(--ink-3);
+  font-family:var(--serif);font-size:20px;font-style:italic;}
+.empty .sub{font-family:var(--mono);font-size:11px;font-style:normal;
+  margin-top:8px;letter-spacing:.04em}
+
+/* ---------- FOOTER ---------- */
+.foot{border-top:1px solid var(--rule); margin:0 30px; padding:18px 0 40px;
+  font-family:var(--mono); font-size:10.5px; color:var(--ink-3);
+  letter-spacing:.03em; line-height:1.8;}
+.foot b{color:var(--ink-2);font-weight:500}
+
+/* ---------- MOBILE ---------- */
+.s-toggle{display:none}
+@media(max-width:860px){
+  .masthead{padding:16px 18px 12px}
+  .layout{flex-direction:column}
+  .sidebar{width:100%;position:static;max-height:none;border-right:none;
+    border-bottom:1px solid var(--rule);padding:18px;display:none;}
+  .sidebar.open{display:block}
+  .feed-wrap{padding:18px}
+  .s-toggle{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;padding:10px 18px;background:var(--paper-2);
+    border:none;border-bottom:1px solid var(--rule);width:100%;cursor:pointer;color:var(--ink);}
+  .foot{margin:0 18px}
+  #map{height:260px}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="masthead">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="17"/><circle cx="20" cy="20" r="10.5"/>
+      <circle cx="20" cy="20" r="4"/>
+      <line x1="20" y1="1" x2="20" y2="39"/><line x1="1" y1="20" x2="39" y2="20"/>
+      <circle class="blip" cx="29.5" cy="12" r="2.6"/>
+    </svg>
+    <div class="wordmark">
+      <div class="name">Event&nbsp;<b>Radar</b></div>
+      <div class="tag">Strategic &amp; security events · monitored weekly</div>
+    </div>
+  </div>
+  <div class="mast-right">
+    <div class="status" id="status"></div>
+    <button class="theme-btn" id="themeBtn">Dark</button>
+  </div>
+</header>
+
+<button class="s-toggle" id="sToggle">&#9662; Filters</button>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="s-block">
+      <div class="s-head">Search</div>
+      <div class="search-box"><input id="search" type="text" placeholder="title, institution, keyword…" autocomplete="off"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head">View</div>
+      <div class="toggle-row" id="quick"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Topic</span><span class="hd-act" data-facet="topics"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="topics"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Format</span><span class="hd-act" data-facet="formats"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="formats"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Region</span><span class="hd-act" data-facet="regions"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="regions"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Institution type</span><span class="hd-act" data-facet="types"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="chips" id="types"></div>
+    </div>
+    <div class="s-block">
+      <div class="s-head"><span>Sources</span><span class="hd-act" data-facet="sources"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div id="sources"></div>
+    </div>
+    <button class="reset" id="reset">&#8634; Reset all filters</button>
+  </aside>
+
+  <main class="feed-wrap">
+    <div class="mappanel" id="mappanel">
+      <div class="maphead" id="maphead">
+        <span class="t"><b id="mapInfo">Map</b><span class="om" id="mapOnline"></span></span>
+        <span class="caret" id="mapCaret">&#9652; hide</span>
+      </div>
+      <div id="map"></div>
+    </div>
+    <div class="resultbar">
+      <div class="count" id="rcount"></div>
+      <div class="meta" id="rmeta"></div>
+    </div>
+    <div id="feed"></div>
+  </main>
+</div>
+
+<footer class="foot" id="foot"></footer>
+
+<script id="payload" type="application/json">{"generated": "2026-05-16 09:54", "today": "2026-05-16", "sources": [{"short": "CERI", "name": "Sciences Po — CERI", "type": "university", "region": "Continental", "events_page": "https://www.sciencespo.fr/ceri/en/evenements.html", "flag": "🇫🇷", "country": "France", "city": "Paris", "lat": 48.857, "lng": 2.343, "count": 23, "status": "ok", "note": ""}, {"short": "ASPI", "name": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "events_page": "https://www.aspi.org.au/events", "flag": "🇦🇺", "country": "Australia", "city": "Canberra", "lat": -35.281, "lng": 149.129, "count": 10, "status": "ok", "note": ""}, {"short": "MERICS", "name": "Mercator Institute for China Studies", "type": "think_tank", "region": "Continental", "events_page": "https://merics.org/en/events", "flag": "🇩🇪", "country": "Germany", "city": "Berlin", "lat": 52.52, "lng": 13.405, "count": 4, "status": "ok", "note": ""}, {"short": "DIIS", "name": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "events_page": "https://www.diis.dk/en/events", "flag": "🇩🇰", "country": "Denmark", "city": "Copenhagen", "lat": 55.676, "lng": 12.568, "count": 8, "status": "ok", "note": ""}, {"short": "KCL/LCI", "name": "KCL — Lau China Institute", "type": "university", "region": "UK", "events_page": "https://www.kcl.ac.uk/lci/events", "flag": "🇬🇧", "country": "United Kingdom", "city": "London", "lat": 51.507, "lng": -0.128, "count": 2, "status": "ok", "note": ""}, {"short": "KCL/War", "name": "KCL — Department of War Studies", "type": "university", "region": "UK", "events_page": "https://www.kcl.ac.uk/warstudies/events", "flag": "🇬🇧", "country": "United Kingdom", "city": "London", "lat": 51.507, "lng": -0.128, "count": 10, "status": "ok", "note": ""}, {"short": "SIPRI", "name": "Stockholm International Peace Research Institute", "type": "research_institute", "region": "Nordic", "events_page": "https://www.sipri.org/news/upcoming", "flag": "🇸🇪", "country": "Sweden", "city": "Stockholm", "lat": 59.329, "lng": 18.069, "count": 5, "status": "ok", "note": ""}, {"short": "Aarhus/PS", "name": "Aarhus University — Political Science", "type": "university", "region": "Nordic", "events_page": "https://ps.au.dk/en/current/events", "flag": "🇩🇰", "country": "Denmark", "city": "Aarhus", "lat": 56.162, "lng": 10.204, "count": 1, "status": "ok", "note": ""}, {"short": "IISS", "name": "International Institute for Strategic Studies", "type": "think_tank", "region": "UK", "events_page": "https://www.iiss.org/events/", "flag": "🇬🇧", "country": "United Kingdom", "city": "London", "lat": 51.507, "lng": -0.128, "count": 0, "status": "manual", "note": "not auto-collected — open the site to check"}], "events": [{"id": "1005a93b463c", "title": "Disconnect, Have Coffee and Write!", "url": "https://www.sciencespo.fr/ceri/en/events/disconnect-have-coffee-and-write", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2025-09-01", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Cette séance interne est organisée dans le cadre du séminaire d'écriture du CERI.", "first_seen": "2026-04-24", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "876c1c4dce3c", "title": "U.S. Strategy in the Indo-Pacific with Chargée d’Affaires Erika Olson", "url": "https://www.aspi.org.au/event/u-s-strategy-in-the-indo-pacific-with-chargee-daffaires-erika-olson/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-03-03", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Indo-Pacific"], "summary": "The post U.S. Strategy in the Indo-Pacific with Chargée d’Affaires Erika Olson appeared first on ASPI.", "first_seen": "2026-04-30", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "79bd7a2f31bd", "title": "Security, Sovereignty and the Rules-Based Order: A Conversation with the Foreign Minister of Estonia", "url": "https://www.aspi.org.au/event/security-sovereignty-and-the-rules-based-order-a-conversation-with-the-foreign-minister-of-estonia/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-03-11", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Security & intelligence"], "summary": "The post Security, Sovereignty and the Rules-Based Order: A Conversation with the Foreign Minister of Estonia appeared first on ASPI.", "first_seen": "2026-04-26", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "90ea09478731", "title": "Autonomous Systems and Future Warfare", "url": "https://www.aspi.org.au/event/autonomous-systems-and-future-warfare/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-03-18", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Defence & military"], "summary": "The post Autonomous Systems and Future Warfare appeared first on ASPI.", "first_seen": "2026-04-16", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "a4d3763d29f3", "title": "China’s Greyzone Fleet: Detecting and disrupting Beijing’s strategy in the Indo-Pacific", "url": "https://www.aspi.org.au/event/chinas-greyzone-fleet-detecting-and-disrupting-beijings-strategy-in-the-indo-pacific/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-03-26", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["China", "Indo-Pacific"], "summary": "The post China’s Greyzone Fleet: Detecting and disrupting Beijing’s strategy in the Indo-Pacific appeared first on ASPI.", "first_seen": "2026-05-06", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "4289cf6f910a", "title": "From Exposure to Endurance: Building a Secure Critical Minerals Value Chain by 2030", "url": "https://www.aspi.org.au/event/from-exposure-to-endurance-building-a-secure-critical-minerals-value-chain-by-2030/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-04-20", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Economic security"], "summary": "The post From Exposure to Endurance: Building a Secure Critical Minerals Value Chain by 2030 appeared first on ASPI.", "first_seen": "2026-05-02", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "7060feaddf72", "title": "Better Policy Program", "url": "https://www.aspi.org.au/event/better-policy-program/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-04-21", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "The post Better Policy Program appeared first on ASPI.", "first_seen": "2026-05-02", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "e08705050b95", "title": "WDSN Policy in the Pub – April 2026", "url": "https://www.aspi.org.au/event/wdsn-policy-in-the-pub-april-2026/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-04-22", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "The post WDSN Policy in the Pub – April 2026 appeared first on ASPI.", "first_seen": "2026-05-04", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "20cc3d3960dd", "title": "Women in Defence and Security Network Speed Mentoring – June 2026", "url": "https://www.aspi.org.au/event/wdsn-speed-mentoring-june-2026/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-05-12", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Defence & military", "Security & intelligence"], "summary": "The post Women in Defence and Security Network Speed Mentoring – June 2026 appeared first on ASPI.", "first_seen": "2026-04-23", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "09855ffd0e8e", "title": "E-CKN Roundtable: How resilient is China? Political and economic vulnerabilities in a fractured geopolitical climate", "url": "https://merics.org/en/events/e-ckn-roundtable-how-resilient-china-political-and-economic-vulnerabilities-fractured", "source_key": "merics", "institution": "MERICS", "institution_full": "Mercator Institute for China Studies", "type": "think_tank", "region": "Continental", "date": "2026-05-18", "date_end": null, "time": null, "date_text": "", "location": "Brussels", "format": "in-person", "topics": ["China", "EU & foreign policy", "Climate & security"], "summary": "Geopolitics E-CKN Roundtable: How resilient is China? Political and economic vulnerabilities in a fractured geopolitical climate May. 18, 2026 Brussels Members only", "first_seen": "2026-05-03", "country": "Germany", "city": "Berlin", "flag": "🇩🇪", "lat": 52.52, "lng": 13.405}, {"id": "b356e786a5dd", "title": "Guerre, extractivisme, puissances régionales : réflexions à partir de la RDC", "url": "https://www.sciencespo.fr/ceri/en/events/guerre-extractivisme-puissances-regionales-reflexions-a-partir-de-la-rdc", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-18", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Cette journée d’études a pour ambition d’interroger les transformations contemporaines des conflictualités en République démocratique du Congo. Journée organisée par le \"Séminaire Afrique : politique, violences et citoyennetés\" du CERI, Africa Programme et la Revue Politique africaine.", "first_seen": "2026-04-18", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "cce71f0a7476", "title": "Le localisme, une discrimination dans le monde universitaire ?", "url": "https://www.sciencespo.fr/ceri/en/events/le-localisme-une-discrimination-dans-le-monde-universitaire", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-18", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Événement organisé dans le cadre du groupe de recherche politiques antidiscriminatoire.", "first_seen": "2026-04-27", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "4387f1f853ce", "title": "RCIR Speaker Book Series: Before Recognition: How the Politics of Religion Shaped the International Order", "url": "https://www.kcl.ac.uk/events/rcir-speaker-book-series-before-recognition-how-the-politics-of-religion-shaped-the-international-order", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-05-19", "date_end": null, "time": "16:00", "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "19 May RCIR Speaker Book Series: Before Recognition: How the Politics of Religion Shaped the International Order 19 May 2026, 16:00 to 18:00 RCIR hosts Dr Maria Birnbaum on religion’s role in global politics, with discussant Dr Stacey… Browser does not support script.", "first_seen": "2026-05-01", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "0ecf1ad58763", "title": "Book launch - Mao: Power and Contradiction", "url": "https://www.kcl.ac.uk/events/book-launch-mao-power-and-contradiction", "source_key": "kcl_lci", "institution": "KCL/LCI", "institution_full": "KCL — Lau China Institute", "type": "university", "region": "UK", "date": "2026-05-20", "date_end": null, "time": "16:30", "date_text": "", "location": null, "format": "in-person", "topics": ["China"], "summary": "Events All Today This week This month Archive 20 May Talk - Rightful resistance co-opted? Legal mobilisation and stratified citizen engagement in China 20 May 2026, 16:30 to 17:30 Dr Chao-yo Cheng (Birkbeck University) explores administrative litigation reforms in China, designed… Browser does not support script. 11 Jun Book launch - Mao: Power and Contradiction 11 June 2026, 17:30 to 19:00 Profes", "first_seen": "2026-05-01", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "0204397bc55f", "title": "Desensitized risk perception and the governance of extensive disasters", "url": "https://www.sciencespo.fr/ceri/en/events/desensitized-risk-perception-and-the-governance-of-extensive-disasters", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-20", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "In-person event organised as part of the Disasters and Risks Seminar.", "first_seen": "2026-04-26", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "758ae97cd942", "title": "POSTDOCSEM : Bourses Marie Curie / Marie Curie Fellowships", "url": "https://www.sciencespo.fr/ceri/en/events/postdocsem-bourses-marie-curie-marie-curie-fellowships", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-20", "date_end": null, "time": null, "date_text": "", "location": null, "format": "hybrid", "topics": [], "summary": "This hybrid event is organised as part of PostDocSem and is reserved for the Sciences Po community.", "first_seen": "2026-04-18", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "f7c0cd9b92c2", "title": "Sciences Sociales de l'International et film documentaire", "url": "https://www.sciencespo.fr/ceri/en/events/sciences-sociales-de-l-international-et-film-documentaire", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-20", "date_end": null, "time": null, "date_text": "", "location": null, "format": "hybrid", "topics": [], "summary": "Evénement hybride organisé dans le cadre du séminaire Arts, Humanités et Sciences Sociales de l'International.", "first_seen": "2026-04-27", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "45463789a25b", "title": "Talk - Rightful resistance co-opted? Legal mobilisation and stratified citizen engagement in China", "url": "https://www.kcl.ac.uk/events/legal-mobilisation", "source_key": "kcl_lci", "institution": "KCL/LCI", "institution_full": "KCL — Lau China Institute", "type": "university", "region": "UK", "date": "2026-05-20", "date_end": null, "time": "16:30", "date_text": "", "location": null, "format": "in-person", "topics": ["China"], "summary": "Events All Today This week This month Archive 20 May Talk - Rightful resistance co-opted? Legal mobilisation and stratified citizen engagement in China 20 May 2026, 16:30 to 17:30 Dr Chao-yo Cheng (Birkbeck University) explores administrative litigation reforms in China, designed… Browser does not support script. 11 Jun Book launch - Mao: Power and Contradiction 11 June 2026, 17:30 to 19:00 Profes", "first_seen": "2026-04-24", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "0cba610486cf", "title": "Expert Conversation with Dr. Maria Repnikova on China’s soft power in Africa", "url": "https://merics.org/en/events/expert-conversation-dr-maria-repnikova-chinas-soft-power-africa", "source_key": "merics", "institution": "MERICS", "institution_full": "Mercator Institute for China Studies", "type": "think_tank", "region": "Continental", "date": "2026-05-21", "date_end": null, "time": null, "date_text": "", "location": "Berlin", "format": "in-person", "topics": ["China"], "summary": "Trade and Investment Expert Conversation with Dr. Maria Repnikova on China’s soft power in Africa May. 21, 2026 Berlin Members only", "first_seen": "2026-05-10", "country": "Germany", "city": "Berlin", "flag": "🇩🇪", "lat": 52.52, "lng": 13.405}, {"id": "4dcf9541caec", "title": "LABSEM : Traquer, tracer les pêcheries thonières de la région Pacifique - Une enquête sur la surveillance et la territorialisation de l'environnement \"offshore\"", "url": "https://www.sciencespo.fr/ceri/en/events/labsem-traquer-tracer-les-pecheries-thonieres-de-la-region-pacifique-une-enquete-sur-la-surveillance-et-la-territorialisation-de-l-environnement-offshore", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-21", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "LABSEM (SÉMINAIRE GÉNÉRAL DU LABORATOIRE) AUTOUR DES \"VARIATIONS AUTORITAIRES\" / RÉSERVÉ AUX MEMBRES DU CERI", "first_seen": "2026-05-14", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "24385896105f", "title": "Le Bénin après 10 ans de Patrice Talon", "url": "https://www.sciencespo.fr/ceri/en/events/le-benin-apres-10-ans-de-patrice-talon", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-21", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Une séance organisée par le groupe de recherche \"Afrique: violences, citoyennetés et politique\"", "first_seen": "2026-05-02", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "9b6fa547a017", "title": "Présentation d'ouvrage : Les conflictualités du patrimoine", "url": "https://www.sciencespo.fr/ceri/en/events/presentation-d-ouvrage-les-conflictualites-du-patrimoine", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-21", "date_end": null, "time": null, "date_text": "", "location": null, "format": "hybrid", "topics": [], "summary": "Evènement hybride organisé dans le cadre du séminaire du GRAM.", "first_seen": "2026-05-15", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "9b3b549809c5", "title": "Constance et inconstance du rapport au vote en migration", "url": "https://www.sciencespo.fr/ceri/en/events/constance-et-inconstance-du-rapport-au-vote-en-migration", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-22", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Séminaire en ligne organisé dans le cadre du groupe de recherche Migration et Politique du CERI et du groupe de recherche « Migration, Politisation, Mobilisation » de l’AFSP.", "first_seen": "2026-04-21", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "19c2039bd343", "title": "Ethnographic accounts of money, debt, and politics", "url": "https://www.diis.dk/en/event/ethnographic-accounts-of-money-debt-and-politics", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-05-22", "date_end": null, "time": null, "date_text": "", "location": "Copenhagen", "format": "in-person", "topics": [], "summary": "Photo/illustration by Peter Krogh Andersen 22 May Ethnographic accounts of money, debt, and politics Copenhagen Business School, Kilevej 14 A, 2000 Frederiksberg in Room K4.74 (4th floor) This seminar explores ethnographic accounts of money, debt, and politics, bringing together researchers working at the intersection between economic sociology and urban ethnography based in Argentina and Brazil", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "5757dd1329e3", "title": "PhD defence: Emilie Kristine Dyrlev", "url": "https://ps.au.dk/en/current/events/event/artikel/phd-forsvar-emilie-kristine-dyrlev", "source_key": "aarhus_ps", "institution": "Aarhus/PS", "institution_full": "Aarhus University — Political Science", "type": "university", "region": "Nordic", "date": "2026-05-22", "date_end": null, "time": "14:15", "date_text": "", "location": "Aarhus", "format": "in-person", "topics": ["Defence & military"], "summary": "Events PhD defence: Emilie Kristine Dyrlev 22 May Friday 22 May 2026, at 14:15 A1, building 1333, room 101, Bartholins Allé 7, 8000 Aarhus C. Emilie Kristine Dyrlev defends her PhD thesis entitled “Patients Left to Their Own Devices? How Digital Psychiatry Reconfigures Expertise between Patients and Professionals.” Revised 23.04.2026 - Aarhus BSS Communication", "first_seen": "2026-05-03", "country": "Denmark", "city": "Aarhus", "flag": "🇩🇰", "lat": 56.162, "lng": 10.204}, {"id": "f896963f8a0b", "title": "Book Launch: Norms and Violence Against Women in Ethiopia", "url": "https://www.diis.dk/en/event/book-launch-norms-and-violence-against-women-in-ethiopia", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-05-26", "date_end": null, "time": null, "date_text": "", "location": "Online", "format": "online", "topics": [], "summary": "26 May Webinar Book Launch: Norms and Violence Against Women in Ethiopia Online via Zoom Join this webinar to hear from firsthand experiences of norm engagement from Ethiopian courtrooms and rural communities to the African Union and the UN", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "eb567db2b736", "title": "Strengthening ties: Danish–Ukrainian trade and investment relations", "url": "https://www.diis.dk/en/event/strengthening-ties-danish-ukrainian-trade-and-investment-relations", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-05-26", "date_end": null, "time": null, "date_text": "", "location": "Online", "format": "online", "topics": ["Russia & Ukraine", "Nordic & Baltic"], "summary": "Photo/illustration by Cecilie Castor 26 May Webinar Strengthening ties: Danish–Ukrainian trade and investment relations Online via Zoom This webinar explores how Ukraine’s recovery, EU integration, and geoeconomic shifts are changing the playing field for Danish businesses", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "8d3ddee7cf83", "title": "Lethal Humidity and the Systemic Risks of Climate Change", "url": "https://www.aspi.org.au/event/lethal-humidity-and-the-systemic-risks-of-climate-change/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-05-27", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Climate & security"], "summary": "The post Lethal Humidity and the Systemic Risks of Climate Change appeared first on ASPI.", "first_seen": "2026-04-30", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "82d898a3a8a7", "title": "Policy paradoxes of recovery in Ukraine – the role of the diaspora and return migration", "url": "https://www.diis.dk/en/event/policy-paradoxes-of-recovery-in-ukraine-the-role-of-the-diaspora-and-return-migration", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-05-27", "date_end": null, "time": null, "date_text": "", "location": "Copenhagen", "format": "in-person", "topics": ["Russia & Ukraine"], "summary": "Photo/illustration by Cecilie Castor 27 May Policy paradoxes of recovery in Ukraine – the role of the diaspora and return migration Ukraine House, Strandgade 27B, 1401 Copenhagen This seminar explores emerging policy paradoxes important for shaping recovery and reconstruction in Ukraine", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "ed3fcad5d488", "title": "Power Preponderance, Assurance, and War", "url": "https://www.kcl.ac.uk/events/power-preponderance-assurance-and-war-1", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-05-28", "date_end": null, "time": "12:00", "date_text": "", "location": null, "format": "in-person", "topics": ["Nuclear & arms control"], "summary": "28 May Power Preponderance, Assurance, and War 28 May 2026, 12:00 to 13:00 Among deterrence scholars, there is a rising consensus that power preponderance causes war by… Browser does not support script.", "first_seen": "2026-04-17", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "f9781e46fa25", "title": "Social media and authoritarianism in Southeast Asia", "url": "https://www.sciencespo.fr/ceri/en/events/social-media-and-authoritarianism-in-southeast-asia", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-28", "date_end": null, "time": null, "date_text": "", "location": "Online", "format": "online", "topics": [], "summary": "Online event organised as part of the Current Dynamics in Southeast Asia seminar.", "first_seen": "2026-05-12", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "3082d273a654", "title": "Street Vendors and the Erosion of Citizenship in São Paulo", "url": "https://www.sciencespo.fr/ceri/en/events/street-vendors-and-the-erosion-of-citizenship-in-sao-paulo", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-28", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "This event is organised as part of OPALC’s monthly Últimos Jueves seminar, in partnership with the Abya Yala association.", "first_seen": "2026-05-12", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "cc53be45b96d", "title": "The political economy of migration", "url": "https://www.sciencespo.fr/ceri/en/events/the-political-economy-of-migration", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-05-28", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "An in-person workshop co-organised with the Southern Methodist University as part of the migration and politics seminar.", "first_seen": "2026-04-14", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "8f542514d829", "title": "The war business: British shipping and the First World War", "url": "https://www.kcl.ac.uk/events/the-war-business-british-shipping-and-the-first-world-war", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-05-28", "date_end": null, "time": "17:15", "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "28 May The war business: British shipping and the First World War 28 May 2026, 17:15 to 18:45 This paper develops an alternative account of the wartime relationship between ships, shipowners,… Browser does not support script.", "first_seen": "2026-05-10", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "76075fbfb970", "title": "Biennale du CERI jour 1 : La violence comme nouveau langage global", "url": "https://www.sciencespo.fr/ceri/en/events/biennale-du-ceri-jour-1-la-violence-comme-nouveau-langage-global", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-02", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Programme détaillé du premier jour de la biennale du CERI 2026", "first_seen": "2026-04-20", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "91d5d38b6d09", "title": "LA BIENNALE DU CERI : Lignes de faille", "url": "https://www.sciencespo.fr/ceri/en/events/la-biennale-du-ceri-lignes-de-failles", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-02", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Programme complet de la biennale du CERI", "first_seen": "2026-04-17", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "3e0673b04303", "title": "Uzbekistan in a changing Eurasia: Strategic balancing, regional cooperation, and connectivity", "url": "https://www.diis.dk/en/event/uzbekistan-in-a-changing-eurasia-strategic-balancing-regional-cooperation-and-connectivity", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-06-02", "date_end": null, "time": null, "date_text": "", "location": "Copenhagen", "format": "in-person", "topics": [], "summary": "Photo/illustration by Generated with ChatGPT 02 Jun Uzbekistan in a changing Eurasia: Strategic balancing, regional cooperation, and connectivity Asia House, Indiakaj 16, 2100 Copenhagen Ø This event discusses how Central Asia is navigating a period of profound transformation and explores questions of strategic balancing, connectivity, energy, emerging regional frameworks, and the future of Eurasi", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "e8167fa53ecb", "title": "Biennale du CERI jour 2 : Par delà les frontières", "url": "https://www.sciencespo.fr/ceri/en/events/biennale-du-ceri-jour-2-par-dela-les-frontieres", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-03", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Programme détaillé du deuxième jour de la biennale du CERI 2026", "first_seen": "2026-05-06", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "44a8f50269c5", "title": "Book Talk: The Return of the Great Powers with Prof Brendan Simms", "url": "https://www.kcl.ac.uk/events/book-talk-the-return-of-the-great-powers-with-prof-brendan-simms", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-05", "date_end": null, "time": "17:00", "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "5 Jun Book Talk: The Return of the Great Powers with Prof Brendan Simms 5 June 2026, 17:00 to 18:15 From the dawn of the modern era to the end of the Cold War, global history was defined by rivalries… Browser does not support script.", "first_seen": "2026-04-14", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "05323be31aa5", "title": "Book Talk: Terror Disrupted: Countering the Financing of Terrorism with Prof Jason M. Blazakis", "url": "https://www.kcl.ac.uk/events/book-talk-terror-disrupted-countering-the-financing-of-terrorism-with-prof-jason-m.-blazakis", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-08", "date_end": null, "time": "18:00", "date_text": "", "location": null, "format": "in-person", "topics": ["Security & intelligence"], "summary": "8 Jun Book Talk: Terror Disrupted: Countering the Financing of Terrorism with Prof Jason M. Blazakis 8 June 2026, 18:00 to 19:15 Terrorism and organised violence are crucially reliant on adequate sources of funding Browser does not support script.", "first_seen": "2026-05-15", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "c7f38862ede0", "title": "Health Security and Cooperation: A Multilateral Perspective", "url": "https://www.kcl.ac.uk/events/health-security-and-cooperation-a-multilateral-perspective", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-08", "date_end": null, "time": "14:00", "date_text": "", "location": null, "format": "in-person", "topics": ["Security & intelligence"], "summary": "8 Jun Health Security and Cooperation: A Multilateral Perspective 8 June 2026, 14:00 to 16:00 Discussions will examine lessons from recent global health crises, the role of international… Browser does not support script.", "first_seen": "2026-05-01", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "756d1ce2e9c8", "title": "Postgraduate Air and Space Conference 2026", "url": "https://www.kcl.ac.uk/events/air-and-space-postgraduate-conference-2026", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-08", "date_end": null, "time": "09:30", "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "8 Jun Postgraduate Air and Space Conference 2026 8 June 2026, 09:30 to 17:00 Air and Space Postgraduate Conference 2026 Browser does not support script.", "first_seen": "2026-05-15", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "69d1c265b3e0", "title": "The hidden crisis - Sexual violence crimes along African-European migration routes", "url": "https://www.diis.dk/en/event/the-hidden-crisis-sexual-violence-crimes-along-african-european-migration-routes", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-06-08", "date_end": null, "time": null, "date_text": "", "location": "Copenhagen", "format": "in-person", "topics": ["Nordic & Baltic"], "summary": "08 Jun The hidden crisis - Sexual violence crimes along African-European migration routes Danish Red Cross, Blegdamsvej 27, 2100 Copenhagen Ø This seminar explores the patterns of sexual violence along the Central Mediterranean migration route, how they affect refugees and other migrants' lives and the challenges and possibilities to address this issue from a humanitarian and legal perspective", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "c154c660d3e5", "title": "2026 Stockholm Forum on Peace and Development", "url": "https://www.sipri.org/events/2026/2026-stockholm-forum-peace-and-development", "source_key": "sipri", "institution": "SIPRI", "institution_full": "Stockholm International Peace Research Institute", "type": "research_institute", "region": "Nordic", "date": "2026-06-09", "date_end": null, "time": null, "date_text": "", "location": "Stockholm", "format": "in-person", "topics": ["Nordic & Baltic"], "summary": "9 June 2026 SIPRI to celebrate 60th anniversary with SIPRI Yearbook launch at the Swedish Parliament SIPRI is honoured to be invited to launch SIPRI Yearbook 2026 at the Swedish Parliament on 9 June 2026 to celebrate SIPRI’s 60th anniversary. 3 November 2026 2026 Stockholm Forum on Peace and Development SIPRI will host the 2026 Stockholm Forum on the theme ‘From Rupture to Repair: New Visions for ", "first_seen": "2026-04-28", "country": "Sweden", "city": "Stockholm", "flag": "🇸🇪", "lat": 59.329, "lng": 18.069}, {"id": "640312de6ad6", "title": "Migration and mobility infrastructures in West Africa – portraits and practices", "url": "https://www.diis.dk/en/event/migration-and-mobility-infrastructures-in-west-africa-portraits-and-practices", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": "2026-06-09", "date_end": null, "time": "01:12", "date_text": "", "location": "Copenhagen", "format": "in-person", "topics": [], "summary": "09 Jun Migration and mobility infrastructures in West Africa – portraits and practices Room 2.1.12 at CSS, University of Copenhagen, Øster Farimagsgade 5, 2100 Copenhagen Ø At this seminar, researchers share their insights on West African migration to illuminate the human stories, hopes and infrastructures that underpin mobilities, going beyond familiar media narratives", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "18f5e7079f34", "title": "SIPRI to celebrate 60th anniversary with SIPRI Yearbook launch at the Swedish Parliament", "url": "https://www.sipri.org/events/2026/sipri-celebrate-60th-anniversary-sipri-yearbook-launch-swedish-parliament", "source_key": "sipri", "institution": "SIPRI", "institution_full": "Stockholm International Peace Research Institute", "type": "research_institute", "region": "Nordic", "date": "2026-06-09", "date_end": null, "time": null, "date_text": "", "location": "Stockholm", "format": "in-person", "topics": ["Nordic & Baltic"], "summary": "9 June 2026 SIPRI to celebrate 60th anniversary with SIPRI Yearbook launch at the Swedish Parliament SIPRI is honoured to be invited to launch SIPRI Yearbook 2026 at the Swedish Parliament on 9 June 2026 to celebrate SIPRI’s 60th anniversary. 3 November 2026 2026 Stockholm Forum on Peace and Development SIPRI will host the 2026 Stockholm Forum on the theme ‘From Rupture to Repair: New Visions for ", "first_seen": "2026-04-28", "country": "Sweden", "city": "Stockholm", "flag": "🇸🇪", "lat": 59.329, "lng": 18.069}, {"id": "bfe434fd376d", "title": "Ethnographier les objets « victimes » de catastrophe à Namie (Fukushima)", "url": "https://www.sciencespo.fr/ceri/en/events/ethnographier-les-objets-victimes-de-catastrophe-a-namie-fukushima", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-10", "date_end": null, "time": null, "date_text": "", "location": null, "format": "hybrid", "topics": [], "summary": "Evénement hybride organisé dans le cadre du Groupe de recherche \"Catastrophes et Risque\"", "first_seen": "2026-04-30", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "549db003a994", "title": "Nukes, Non-Proliferation and the South Atlantic Region", "url": "https://www.kcl.ac.uk/events/nukes-non-proliferation-and-the-south-atlantic-region", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-10", "date_end": null, "time": "14:00", "date_text": "", "location": null, "format": "in-person", "topics": ["Nuclear & arms control"], "summary": "10 Jun Nukes, Non-Proliferation and the South Atlantic Region 10 June 2026, 14:00 to 15:00 This event will explore the historical foundations and contemporary challenges of nuclear governance… Browser does not support script.", "first_seen": "2026-05-04", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "2f5b50815a6a", "title": "Indispensables et indésirables. Les travailleurs coloniaux de la Grande Guerre", "url": "https://www.sciencespo.fr/ceri/en/events/indispensables-et-indesirables-les-travailleurs-coloniaux-de-la-grande-guerre", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-11", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Événement organisé dans le cadre du groupe de recherche politiques antidiscriminatoire.", "first_seen": "2026-04-17", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "bfeba3848d47", "title": "Retour d’Argentine : partis politiques et classes populaires sous Javier Milei", "url": "https://www.sciencespo.fr/ceri/en/events/retour-d-argentine-partis-politiques-et-classes-populaires-sous-javier-milei", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-11", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "Ce séminaire en présentiel est organisé dans le cadre du séminaire \"Retour de terrain\".", "first_seen": "2026-05-07", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "a3816c0f5518", "title": "The Annual Dockrill Memorial Lecture: Technology and the Changing Nature of Covert Action", "url": "https://www.kcl.ac.uk/events/the-annual-dockrill-memorial-lecture-technology-and-the-changing-nature-of-covert-action", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-11", "date_end": null, "time": "18:00", "date_text": "", "location": null, "format": "in-person", "topics": ["Security & intelligence"], "summary": "11 Jun The Annual Dockrill Memorial Lecture: Technology and the Changing Nature of Covert Action 11 June 2026, 18:00 to 19:30 We’re delighted to welcome Professor Richard J. Aldrich, Professor of International Security at the… Browser does not support script.", "first_seen": "2026-04-21", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "6b94f03f039a", "title": "Schism: The Story of Sectarianism in the Modern Middle East", "url": "https://www.kcl.ac.uk/events/schism-the-story-of-sectarianism-in-the-modern-middle-east", "source_key": "kcl_war", "institution": "KCL/War", "institution_full": "KCL — Department of War Studies", "type": "university", "region": "UK", "date": "2026-06-12", "date_end": null, "time": "17:00", "date_text": "", "location": null, "format": "in-person", "topics": [], "summary": "12 Jun Schism: The Story of Sectarianism in the Modern Middle East 12 June 2026, 17:00 to 18:30 Join us for Professor Simon Mabon's book launch of 'Schism' Browser does not support script.", "first_seen": "2026-05-14", "country": "United Kingdom", "city": "London", "flag": "🇬🇧", "lat": 51.507, "lng": -0.128}, {"id": "94c70843ef3c", "title": "Séance de travail sur les textes de juin", "url": "https://www.sciencespo.fr/ceri/en/events/seance-de-travail-sur-les-textes-de-juin", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-15", "date_end": null, "time": null, "date_text": "", "location": null, "format": "hybrid", "topics": [], "summary": "Cette séance interne est organisée dans le cadre du séminaire d'écriture du CERI. Evénement en format hybride (présentiel / visioconférence).", "first_seen": "2026-05-03", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "8cc79f0e0cfa", "title": "The fall of Hong Kong, and the Implications for Taiwan", "url": "https://www.sciencespo.fr/ceri/en/events/the-fall-of-hong-kong-and-the-implications-for-taiwan", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-15", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Taiwan"], "summary": "This conference will be held in-person only.", "first_seen": "2026-04-18", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "2a76e3e6eff8", "title": "ASPI Defence Conference 2026: Securing the Region for Uncertainty", "url": "https://www.aspi.org.au/event/aspi-defence-conference-2026/", "source_key": "aspi", "institution": "ASPI", "institution_full": "Australian Strategic Policy Institute", "type": "think_tank", "region": "Indo-Pacific", "date": "2026-06-24", "date_end": null, "time": null, "date_text": "", "location": null, "format": "in-person", "topics": ["Defence & military"], "summary": "The post ASPI Defence Conference 2026: Securing the Region for Uncertainty appeared first on ASPI.", "first_seen": "2026-04-16", "country": "Australia", "city": "Canberra", "flag": "🇦🇺", "lat": -35.281, "lng": 149.129}, {"id": "af2c75feb503", "title": "MERICS Members Day 2026", "url": "https://merics.org/en/events/merics-members-day-2026", "source_key": "merics", "institution": "MERICS", "institution_full": "Mercator Institute for China Studies", "type": "think_tank", "region": "Continental", "date": "2026-06-24", "date_end": null, "time": null, "date_text": "", "location": "Berlin", "format": "in-person", "topics": [], "summary": "MERICS Members Day 2026 Jun. 24, 2026 Berlin Members only", "first_seen": "2026-04-19", "country": "Germany", "city": "Berlin", "flag": "🇩🇪", "lat": 52.52, "lng": 13.405}, {"id": "2e64c6bbe7a5", "title": "Soutenance de thèse de M. Eric REPETTO - Programme de Science politique", "url": "https://www.sciencespo.fr/ceri/en/events/soutenance-these-eric-repetto-science-politique", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-26", "date_end": null, "time": null, "date_text": "", "location": "Paris", "format": "in-person", "topics": [], "summary": "M. Eric REPETTODiscipline : Science politiqueSujet : Writing sovereignty from without: the role of private (digital) actors in constructing sovereign discourse in Australia and the European UnionJury : Stephane BAELE, Thierry BALZACQ (Directeur de recherche), Kristin Anabel EGGELING, Frédéric RAMEL, Swati SRIVASTAVACentre de recherche : CERILa soutenance publique aura lieu le 26/06/2026 à 9h, en s", "first_seen": "2026-05-07", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "b28e5ffac614", "title": "Soutenance de thèse de Mme Doha LKASMI - Programme de Science politique", "url": "https://www.sciencespo.fr/ceri/en/events/soutenance-these-doha-lkasmi-science-politique", "source_key": "ceri", "institution": "CERI", "institution_full": "Sciences Po — CERI", "type": "university", "region": "Continental", "date": "2026-06-29", "date_end": null, "time": null, "date_text": "", "location": "Paris", "format": "in-person", "topics": [], "summary": "Mme Doha LKASMIDiscipline : Science politiqueSujet : Le Sahara de sa Majesté : généalogie des revendications sahariennes comme grande stratégie du Maroc de 1956 à nos joursJury : Mohamed‐Ali ADRAOUI, Thierry BALZACQ (Directeur de recherche), Manon‐Nour TANNOUS, Michael WILLIS, Jonathan WYRTZENCentre de recherche : CERILa soutenance publique aura lieu le 29/06/2026 à 9h, en salle Goguel (56 rue des", "first_seen": "2026-05-15", "country": "France", "city": "Paris", "flag": "🇫🇷", "lat": 48.857, "lng": 2.343}, {"id": "7368f8f3b1f8", "title": "MERICS European China Talent Program 2026", "url": "https://merics.org/en/events/merics-european-china-talent-program-2026", "source_key": "merics", "institution": "MERICS", "institution_full": "Mercator Institute for China Studies", "type": "think_tank", "region": "Continental", "date": "2026-09-22", "date_end": null, "time": null, "date_text": "", "location": "Berlin", "format": "in-person", "topics": ["China"], "summary": "MERICS European China Talent Program 2026 The Call for Application for 2026 is open. Please find more information here. Sep. 22, 2026 Berlin", "first_seen": "2026-04-26", "country": "Germany", "city": "Berlin", "flag": "🇩🇪", "lat": 52.52, "lng": 13.405}, {"id": "84bc2cd4c8b5", "title": "Previous events and webinars", "url": "https://www.diis.dk/en/events/previous-events", "source_key": "diis", "institution": "DIIS", "institution_full": "Danish Institute for International Studies", "type": "research_institute", "region": "Nordic", "date": null, "date_end": null, "time": null, "date_text": "", "location": null, "format": "online", "topics": [], "summary": "Previous events and webinars Contact Photo/illustration by Jette Mariboe, DIIS Emilie Hedegaard Jensen Conference Event planner +45 9132 5472 emhj@diis.dk Photo/illustration by Lynggaardhansenfoto.dk Amalie Risvig Skovbo Conference Event planner +45 9132 5491 amni@diis.dk", "first_seen": "2026-05-16", "country": "Denmark", "city": "Copenhagen", "flag": "🇩🇰", "lat": 55.676, "lng": 12.568}, {"id": "c2ad4c64d009", "title": "SIPRI Lecture", "url": "https://www.sipri.org/events/sipri-lecture", "source_key": "sipri", "institution": "SIPRI", "institution_full": "Stockholm International Peace Research Institute", "type": "research_institute", "region": "Nordic", "date": null, "date_end": null, "time": null, "date_text": "", "location": "Stockholm", "format": "in-person", "topics": ["Security & intelligence"], "summary": "News and Events Past News and Events Upcoming Events SIPRI Lecture Stockholm Forum on Peace and Development Stockholm Security Conference", "first_seen": "2026-04-28", "country": "Sweden", "city": "Stockholm", "flag": "🇸🇪", "lat": 59.329, "lng": 18.069}, {"id": "8dcf9908cb24", "title": "Stockholm Forum on Peace and Development", "url": "https://www.sipri.org/events/stockholm-forum-peace-and-development", "source_key": "sipri", "institution": "SIPRI", "institution_full": "Stockholm International Peace Research Institute", "type": "research_institute", "region": "Nordic", "date": null, "date_end": null, "time": null, "date_text": "", "location": "Stockholm", "format": "in-person", "topics": ["Security & intelligence"], "summary": "News and Events Past News and Events Upcoming Events SIPRI Lecture Stockholm Forum on Peace and Development Stockholm Security Conference", "first_seen": "2026-05-13", "country": "Sweden", "city": "Stockholm", "flag": "🇸🇪", "lat": 59.329, "lng": 18.069}, {"id": "a0aa3eca9cca", "title": "Stockholm Security Conference", "url": "https://www.sipri.org/events/stockholm-security-conference", "source_key": "sipri", "institution": "SIPRI", "institution_full": "Stockholm International Peace Research Institute", "type": "research_institute", "region": "Nordic", "date": null, "date_end": null, "time": null, "date_text": "", "location": "Stockholm", "format": "in-person", "topics": ["Security & intelligence"], "summary": "News and Events Past News and Events Upcoming Events SIPRI Lecture Stockholm Forum on Peace and Development Stockholm Security Conference", "first_seen": "2026-05-13", "country": "Sweden", "city": "Stockholm", "flag": "🇸🇪", "lat": 59.329, "lng": 18.069}]}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+"use strict";
+const DATA = JSON.parse(document.getElementById('payload').textContent);
+const TODAY = new Date(DATA.today + 'T00:00:00');
+const WEEK_AGO = new Date(TODAY); WEEK_AGO.setDate(WEEK_AGO.getDate()-7);
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TYPELABEL={university:'University',think_tank:'Think tank',research_institute:'Research institute'};
+const FMTLABEL={'in-person':'In person',online:'Online',hybrid:'Hybrid'};
+const $=s=>document.querySelector(s);
+
+/* ---------- THEME ---------- */
+function setTheme(t){
+  document.documentElement.dataset.theme=t;
+  $('#themeBtn').textContent = t==='dark' ? 'Light' : 'Dark';
+  try{ localStorage.setItem('radar-theme',t); }catch(e){}
+  if(window._map) setTiles();
+}
+(function initTheme(){
+  let t=null;
+  try{ t=localStorage.getItem('radar-theme'); }catch(e){}
+  if(!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light';
+  setTheme(t);
+})();
+$('#themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+/* ---------- EVENTS ---------- */
+const EVENTS = DATA.events.map(e=>{
+  const d = e.date ? new Date(e.date+'T00:00:00') : null;
+  const fs = new Date(e.first_seen+'T00:00:00');
+  return Object.assign({},e,{_d:d,_new:fs>=WEEK_AGO});
+}).filter(e=> !e._d || e._d>=TODAY);
+
+/* ---------- FILTER STATE (everything starts ON — high recall) ---------- */
+const F={ q:'', newOnly:false, window:0, city:null,
+          topics:new Set(), formats:new Set(), regions:new Set(),
+          types:new Set(), sources:new Set() };
+
+function valuesOf(field,multi){
+  const m={};
+  EVENTS.forEach(e=>{
+    const vals = multi ? (e[field].length?e[field]:['— untagged']) : [e[field]];
+    vals.forEach(v=>m[v]=(m[v]||0)+1);
+  });
+  return m;
+}
+const C_TOPIC =valuesOf('topics',true);
+const C_FORMAT=valuesOf('format',false);
+const C_REGION=valuesOf('region',false);
+const C_TYPE  =valuesOf('type',false);
+Object.keys(C_TOPIC ).forEach(v=>F.topics.add(v));
+Object.keys(C_FORMAT).forEach(v=>F.formats.add(v));
+Object.keys(C_REGION).forEach(v=>F.regions.add(v));
+Object.keys(C_TYPE  ).forEach(v=>F.types.add(v));
+DATA.sources.forEach(s=>F.sources.add(s.short));
+
+/* ---------- SIDEBAR ---------- */
+const chipRegistry=[];   // {el,set,val} — for syncing on/off classes
+function buildChips(containerId,countMap,set,labelFn,order){
+  const wrap=document.getElementById(containerId);
+  const keys=order||Object.keys(countMap).sort((a,b)=>countMap[b]-countMap[a]);
+  keys.forEach(v=>{
+    const c=document.createElement('div');
+    c.className='chip';
+    c.innerHTML=`<span>${labelFn?labelFn(v):v}</span><span class="n">${countMap[v]}</span>`;
+    c.onclick=()=>{ set.has(v)?set.delete(v):set.add(v); render(); };
+    chipRegistry.push({el:c,set,val:v});
+    wrap.appendChild(c);
+  });
+}
+buildChips('topics', C_TOPIC,  F.topics);
+buildChips('formats',C_FORMAT, F.formats, v=>FMTLABEL[v]||v,
+           ['in-person','online','hybrid'].filter(v=>C_FORMAT[v]));
+buildChips('regions',C_REGION, F.regions);
+buildChips('types',  C_TYPE,   F.types, v=>TYPELABEL[v]||v,
+           ['university','think_tank','research_institute'].filter(v=>C_TYPE[v]));
+
+/* quick toggles (modes, not facets) */
+const qWrap=$('#quick');
+const newChip=document.createElement('div');
+newChip.className='chip mode';
+newChip.innerHTML=`<span>&#9733; New this week</span><span class="n">${EVENTS.filter(e=>e._new).length}</span>`;
+newChip.onclick=()=>{F.newOnly=!F.newOnly;render();};
+qWrap.appendChild(newChip);
+const winChips={};
+[['Next 30 days',30],['Next 90 days',90]].forEach(([lbl,n])=>{
+  const c=document.createElement('div'); c.className='chip mode';
+  c.innerHTML=`<span>${lbl}</span>`;
+  c.onclick=()=>{F.window=F.window===n?0:n;render();};
+  winChips[n]=c; qWrap.appendChild(c);
+});
+
+/* sources — toggle rows + manual-check cards */
+const srcWrap=$('#sources');
+const byType={};
+DATA.sources.forEach(s=>{(byType[s.type]=byType[s.type]||[]).push(s);});
+['university','think_tank','research_institute'].forEach(ty=>{
+  if(!byType[ty]) return;
+  const g=document.createElement('div'); g.className='src-grp';
+  g.textContent=TYPELABEL[ty]; srcWrap.appendChild(g);
+  byType[ty].forEach(s=>{
+    const row=document.createElement('div');
+    if(s.status==='manual'){
+      row.className='src manual';
+      row.innerHTML=`<span class="fl">${s.flag}</span>
+        <span class="dot" style="background:var(--rule-2)"></span>
+        <span class="nm">${s.short}</span>
+        <a class="open" href="${s.events_page}" target="_blank" rel="noopener">check &#8599;</a>`;
+      row.title=s.name+' — '+s.note;
+    }else{
+      const dotc=s.status==='error'?'var(--signal)':s.status==='ok'?'var(--ok)':'var(--rule-2)';
+      row.className='src';
+      row.innerHTML=`<span class="fl">${s.flag}</span>
+        <span class="dot" style="background:${dotc}"></span>
+        <span class="nm">${s.short}</span>
+        <span class="ct">${s.count}</span>`;
+      row.title=s.name+(s.status==='empty'?' — live, no upcoming events listed':
+                        s.status==='error'?' — collection failed':'');
+      row.onclick=()=>{F.sources.has(s.short)?F.sources.delete(s.short):F.sources.add(s.short);render();};
+      chipRegistry.push({el:row,set:F.sources,val:s.short});
+    }
+    srcWrap.appendChild(row);
+  });
+});
+
+/* all / none per section */
+const FACETSETS={topics:F.topics,formats:F.formats,regions:F.regions,
+                 types:F.types,sources:F.sources};
+const FACETALL ={topics:Object.keys(C_TOPIC),formats:Object.keys(C_FORMAT),
+                 regions:Object.keys(C_REGION),types:Object.keys(C_TYPE),
+                 sources:DATA.sources.map(s=>s.short)};
+document.querySelectorAll('.hd-act').forEach(h=>{
+  const f=h.dataset.facet;
+  h.querySelector('[data-act=all]').onclick =()=>{
+    FACETSETS[f].clear(); FACETALL[f].forEach(v=>FACETSETS[f].add(v)); render();};
+  h.querySelector('[data-act=none]').onclick=()=>{ FACETSETS[f].clear(); render();};
+});
+
+/* ---------- FILTERING ---------- */
+function passNonGeo(e){
+  if(!F.sources.has(e.institution)) return false;
+  if(F.newOnly && !e._new) return false;
+  if(F.window && e._d && e._d>new Date(TODAY.getTime()+F.window*864e5)) return false;
+  const evt = e.topics.length?e.topics:['— untagged'];
+  if(!evt.some(t=>F.topics.has(t))) return false;
+  if(!F.formats.has(e.format)) return false;
+  if(!F.regions.has(e.region)) return false;
+  if(!F.types.has(e.type)) return false;
+  if(F.q){
+    const hay=(e.title+' '+e.institution+' '+e.summary+' '+e.topics.join(' ')+' '+(e.city||'')).toLowerCase();
+    if(!hay.includes(F.q)) return false;
+  }
+  return true;
+}
+function visible(){ return EVENTS.filter(e=>passNonGeo(e)&&(!F.city||e.city===F.city)); }
+
+/* ---------- MAP ---------- */
+let tileLayer,markerLayer,lastCityKey='';
+function setTiles(){
+  if(!window._map) return;
+  if(tileLayer) window._map.removeLayer(tileLayer);
+  const dark=document.documentElement.dataset.theme==='dark';
+  tileLayer=L.tileLayer(
+    dark? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {maxZoom:11,subdomains:'abcd',attribution:'&copy; OpenStreetMap &copy; CARTO'});
+  tileLayer.addTo(window._map); tileLayer.bringToBack();
+}
+function initMap(){
+  window._map=L.map('map',{zoomControl:true,scrollWheelZoom:false,minZoom:2});
+  markerLayer=L.layerGroup().addTo(window._map);
+  setTiles();
+  window._map.setView([52,8],4);
+}
+function renderMap(){
+  if(!window._map) return;
+  markerLayer.clearLayers();
+  const base=EVENTS.filter(e=>passNonGeo(e)&&e.lat!=null&&e.format!=='online');
+  const online=EVENTS.filter(e=>passNonGeo(e)&&e.format==='online').length;
+  const byCity={};
+  base.forEach(e=>{(byCity[e.city]=byCity[e.city]||{city:e.city,lat:e.lat,lng:e.lng,n:0}).n++;});
+  const cities=Object.values(byCity);
+  cities.forEach(c=>{
+    const active=F.city===c.city;
+    const sz=26+Math.min(c.n,18)*1.5;
+    const icon=L.divIcon({className:'',iconSize:[sz,sz],
+      html:`<div class="pin ${active?'on':''} ${F.city&&!active?'dim':''}">${c.n}</div>`});
+    const m=L.marker([c.lat,c.lng],{icon}).addTo(markerLayer);
+    m.bindTooltip(c.city+' · '+c.n+' event'+(c.n>1?'s':''),{direction:'top',offset:[0,-sz/2]});
+    m.on('click',()=>{F.city=active?null:c.city;render();});
+  });
+  $('#mapInfo').textContent=`${base.length} mapped event${base.length!==1?'s':''} · ${cities.length} cit${cities.length!==1?'ies':'y'}`;
+  $('#mapOnline').textContent=online?`+ ${online} online`:'';
+  const key=cities.map(c=>c.city).sort().join(',');
+  if(key && key!==lastCityKey){
+    lastCityKey=key;
+    const grp=L.featureGroup(cities.map(c=>L.marker([c.lat,c.lng])));
+    try{ window._map.fitBounds(grp.getBounds().pad(0.4),{maxZoom:7}); }catch(e){}
+  }
+}
+
+/* ---------- RENDER ---------- */
+function syncChips(){
+  chipRegistry.forEach(({el,set,val})=>el.classList.toggle('off',!set.has(val)));
+  newChip.classList.toggle('on',F.newOnly);
+  Object.entries(winChips).forEach(([n,c])=>c.classList.toggle('on',F.window==n));
+}
+function fmtDateBox(e){
+  if(!e._d) return `<div class="datebox tbc"><div class="d">TBC</div></div>`;
+  const d=e._d; let day=String(d.getDate());
+  if(e.date_end){const e2=new Date(e.date_end+'T00:00:00'); if(e2>d) day=d.getDate()+'\u2013'+e2.getDate();}
+  return `<div class="datebox"><div class="d">${day}</div>
+    <div class="m">${MONTHS[d.getMonth()]}</div><div class="wd">${WD[d.getDay()]}</div></div>`;
+}
+function facetSummary(){
+  const out=[];
+  const chk=(set,all,noun)=>{
+    if(set.size===0) out.push('no '+noun);
+    else if(set.size<all) out.push(set.size+'/'+all+' '+noun);
+  };
+  chk(F.topics,Object.keys(C_TOPIC).length,'topics');
+  chk(F.formats,Object.keys(C_FORMAT).length,'formats');
+  chk(F.regions,Object.keys(C_REGION).length,'regions');
+  chk(F.types,Object.keys(C_TYPE).length,'types');
+  chk(F.sources,DATA.sources.length,'sources');
+  if(F.newOnly) out.push('new only');
+  if(F.window) out.push('\u2264'+F.window+'d');
+  if(F.q) out.push('\u201c'+F.q+'\u201d');
+  return out;
+}
+function render(){
+  syncChips();
+  const vis=visible();
+  // masthead
+  $('#status').innerHTML=
+    `<div><span class="big">${EVENTS.length}</span> events tracked</div>
+     <div class="row"><span class="new-badge" id="nb">${EVENTS.filter(e=>e._new).length} new this week</span></div>
+     <div class="row">updated ${DATA.generated}</div>`;
+  $('#nb').onclick=()=>{F.newOnly=!F.newOnly;render();};
+  // result bar
+  $('#rcount').innerHTML=`<b>${vis.length}</b> event${vis.length!==1?'s':''} shown`;
+  const rmeta=$('#rmeta'); rmeta.innerHTML='';
+  if(F.city){
+    const tag=document.createElement('span'); tag.className='citytag';
+    tag.textContent='\u25C9 '+F.city+'  \u2715';
+    tag.onclick=()=>{F.city=null;render();};
+    rmeta.appendChild(tag);
+  }
+  const sum=facetSummary();
+  const txt=document.createElement('span');
+  txt.textContent = sum.length? 'filtered · '+sum.join(' · ') : 'no filters · all upcoming';
+  rmeta.appendChild(txt);
+  // feed
+  const feed=$('#feed'); feed.innerHTML='';
+  if(!vis.length){
+    feed.innerHTML=`<div class="empty">Nothing matches these filters.
+      <div class="sub">Loosen a filter or hit reset.</div></div>`;
+  }else{
+    let cur=null,i=0;
+    vis.forEach(e=>{
+      const mk=e._d? e._d.getFullYear()+'-'+e._d.getMonth():'tbc';
+      if(mk!==cur){
+        cur=mk;
+        const lbl=e._d? MONTHS[e._d.getMonth()].toUpperCase()+' '+e._d.getFullYear():'DATE TO BE CONFIRMED';
+        const cnt=vis.filter(x=>(x._d?x._d.getFullYear()+'-'+x._d.getMonth():'tbc')===mk).length;
+        const m=document.createElement('div'); m.className='month';
+        m.innerHTML=`<span class="lbl">${lbl}</span><span class="ln"></span><span class="ct">${cnt}</span>`;
+        feed.appendChild(m);
+      }
+      const row=document.createElement('div');
+      row.className='evt'+(e._new?' new':'');
+      row.style.animationDelay=Math.min(i*20,560)+'ms'; i++;
+      const tps=e.topics.map(t=>`<span class="tp" data-t="${t}">${t}</span>`).join('');
+      const fcls=e.format==='online'?'fmt-online':e.format==='hybrid'?'fmt-hybrid':'';
+      const tm=e.time?`<span class="sep">/</span><span>${e.time}</span>`:'';
+      const loc=e.location&&e.location!==e.city?`<span class="sep">/</span><span>${e.location}</span>`:'';
+      row.innerHTML=`
+        ${fmtDateBox(e)}
+        <div class="evt-body">
+          <a class="evt-title" href="${e.url}" target="_blank" rel="noopener">
+            ${e._new?'<span class="newtag">NEW</span>':''}${e.title}
+            <span class="ext">\u2197</span></a>
+          <div class="evt-meta">
+            <span class="fl">${e.flag}</span>
+            <span class="inst" data-inst="${e.institution}">${e.institution}</span>
+            <span class="typ">${TYPELABEL[e.type]||e.type}</span>
+            <span class="sep">/</span><span>${e.city||e.region}</span>
+            <span class="sep">/</span><span class="${fcls}">${FMTLABEL[e.format]||e.format}</span>
+            ${tm}${loc}
+          </div>
+          ${tps?`<div class="topics">${tps}</div>`:''}
+        </div>`;
+      // row interactions: isolate topic / institution
+      row.querySelectorAll('.tp').forEach(el=>el.onclick=ev=>{
+        ev.preventDefault();
+        F.topics.clear(); F.topics.add(el.dataset.t); render();
+      });
+      const inst=row.querySelector('.inst');
+      if(inst) inst.onclick=()=>{ F.sources.clear(); F.sources.add(inst.dataset.inst); render(); };
+      feed.appendChild(row);
+    });
+  }
+  renderMap();
+}
+
+/* ---------- FOOTER ---------- */
+(function(){
+  const ok=DATA.sources.filter(s=>s.status==='ok').length;
+  const live=DATA.sources.filter(s=>s.status!=='manual').length;
+  const parts=DATA.sources.map(s=>`${s.flag} ${s.short} ${s.status==='manual'?'(manual)':s.count}`).join('   ');
+  $('#foot').innerHTML=
+    `<b>${ok}/${live} sources live</b> · generated ${DATA.generated}<br>`+parts+
+    `<br><br>Edit <b>sources.yaml</b> to add or remove institutions. `+
+    `“New this week” = first appeared in the last 7 days. Past events are hidden automatically. `+
+    `Online events are listed but not pinned on the map.`;
+})();
+
+/* ---------- WIRING ---------- */
+let deb;
+$('#search').oninput=ev=>{clearTimeout(deb);deb=setTimeout(()=>{F.q=ev.target.value.trim().toLowerCase();render();},150);};
+$('#reset').onclick=()=>{
+  F.q='';F.newOnly=false;F.window=0;F.city=null;
+  Object.entries(FACETSETS).forEach(([f,set])=>{set.clear();FACETALL[f].forEach(v=>set.add(v));});
+  $('#search').value='';
+  render();
+};
+$('#sToggle').onclick=()=>{
+  const sb=$('#sidebar'); sb.classList.toggle('open');
+  $('#sToggle').innerHTML=(sb.classList.contains('open')?'\u25B4':'\u25BE')+' Filters';
+};
+$('#maphead').onclick=()=>{
+  const p=$('#mappanel'),collapsed=p.classList.toggle('collapsed');
+  $('#maphead').classList.toggle('collapsed',collapsed);
+  $('#mapCaret').innerHTML=collapsed?'\u25BE show':'\u25B4 hide';
+  if(!collapsed && window._map) setTimeout(()=>{window._map.invalidateSize();renderMap();},60);
+};
+
+initMap();
+render();
+})();
+</script>
+</body>
+</html>
