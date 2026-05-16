@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-16 18:00",
+  "generated": "2026-05-16 18:25",
   "today": "2026-05-16",
   "sources": [
     {
@@ -28,9 +28,9 @@
       "city": "Canberra",
       "lat": -35.281,
       "lng": 149.129,
-      "count": 2,
-      "status": "ok",
-      "note": ""
+      "count": 0,
+      "status": "error",
+      "note": "HTTPError: 403 Client Error: Forbidden for url: https://www.aspi.org.au/events/feed/"
     },
     {
       "short": "MERICS",
@@ -1344,32 +1344,6 @@
       "lng": 12.568
     },
     {
-      "id": "8d3ddee7cf83",
-      "title": "Lethal Humidity and the Systemic Risks of Climate Change",
-      "url": "https://www.aspi.org.au/event/lethal-humidity-and-the-systemic-risks-of-climate-change/",
-      "source_key": "aspi",
-      "institution": "ASPI",
-      "institution_full": "Australian Strategic Policy Institute",
-      "type": "think_tank",
-      "region": "Indo-Pacific",
-      "date": "2026-05-27",
-      "date_end": null,
-      "time": null,
-      "date_text": "",
-      "location": null,
-      "format": "in-person",
-      "topics": [
-        "Climate & security"
-      ],
-      "summary": "The post Lethal Humidity and the Systemic Risks of Climate Change appeared first on ASPI.",
-      "first_seen": "2026-04-30",
-      "country": "Australia",
-      "city": "Canberra",
-      "flag": "🇦🇺",
-      "lat": -35.281,
-      "lng": 149.129
-    },
-    {
       "id": "82d898a3a8a7",
       "title": "Policy paradoxes of recovery in Ukraine – the role of the diaspora and return migration",
       "url": "https://www.diis.dk/en/event/policy-paradoxes-of-recovery-in-ukraine-the-role-of-the-diaspora-and-return-migration",
@@ -2221,32 +2195,6 @@
       "flag": "🇩🇰",
       "lat": 55.676,
       "lng": 12.568
-    },
-    {
-      "id": "2a76e3e6eff8",
-      "title": "ASPI Defence Conference 2026: Securing the Region for Uncertainty",
-      "url": "https://www.aspi.org.au/event/aspi-defence-conference-2026/",
-      "source_key": "aspi",
-      "institution": "ASPI",
-      "institution_full": "Australian Strategic Policy Institute",
-      "type": "think_tank",
-      "region": "Indo-Pacific",
-      "date": "2026-06-24",
-      "date_end": null,
-      "time": null,
-      "date_text": "",
-      "location": null,
-      "format": "in-person",
-      "topics": [
-        "Defence & military"
-      ],
-      "summary": "The post ASPI Defence Conference 2026: Securing the Region for Uncertainty appeared first on ASPI.",
-      "first_seen": "2026-04-16",
-      "country": "Australia",
-      "city": "Canberra",
-      "flag": "🇦🇺",
-      "lat": -35.281,
-      "lng": 149.129
     },
     {
       "id": "af2c75feb503",
