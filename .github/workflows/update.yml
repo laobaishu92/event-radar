@@ -1,0 +1,34 @@
+name: Update Event Radar
+
+# Runs the collector twice a week and commits the refreshed dashboard.
+on:
+  schedule:
+    - cron: '0 6 * * 1,4'      # Mondays & Thursdays, 06:00 UTC
+  workflow_dispatch:            # also gives you a manual "Run" button
+
+permissions:
+  contents: write               # needed to commit events.json + index.html
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run collector
+        run: python collector.py
+
+      - name: Commit refreshed dashboard
+        run: |
+          git config user.name  "event-radar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add events.json index.html
+          git diff --quiet --cached || git commit -m "Refresh events — $(date -u +%Y-%m-%d)"
+          git push
