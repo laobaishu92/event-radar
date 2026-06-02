@@ -76,7 +76,7 @@ COUNTRY_FLAG = {
     "Switzerland":"\U0001F1E8\U0001F1ED", "Austria":"\U0001F1E6\U0001F1F9",
     "Poland":"\U0001F1F5\U0001F1F1", "United States":"\U0001F1FA\U0001F1F8",
     "Hungary":"\U0001F1ED\U0001F1FA", "Hong Kong":"\U0001F1ED\U0001F1F0",
-    "Slovakia":"\U0001F1F8\U0001F1F0",
+    "Slovakia":"\U0001F1F8\U0001F1F0", "Taiwan":"\U0001F1F9\U0001F1FC",
 }
 # city -> [lat, lng]  for the map  (extend as you add institutions)
 CITY_COORDS = {
@@ -87,6 +87,7 @@ CITY_COORDS = {
     "Washington":[38.907,-77.037], "Warsaw":[52.232,21.012], "Hong Kong":[22.319,114.169],
     "Cambridge":[52.205,0.119], "Oxford":[51.755,-1.255], "Tampere":[61.498,23.761],
     "Aalborg":[57.048,9.922], "Bratislava":[48.148,17.107], "Sydney":[-33.869,151.209],
+    "Taipei":[25.033,121.565],
 }
 
 # -----------------------------------------------------------------------------

@@ -386,3 +386,123 @@
   method: scrape
   url: https://www.tuni.fi/en/news/events
   events_page: https://www.tuni.fi/en/news/events
+
+# ----- ADDED: TAIWAN (all manual-check cards — see notes per entry) -----------
+#  Tested 2026-06-02 against the generic scraper. None auto-collect cleanly:
+#  the server-rendered ones expose events only via query-string detail URLs
+#  (no /event/ path segment, so the anchor filter matches nothing) and use
+#  ROC-year / 年月日 dates; the rest are JS-rendered or are past-event archives.
+#  All eight are parked as manual-check cards, consistent with GTI/CEIAS/FIIA.
+
+# Server-rendered, but "活動足跡" is a PAST-activity archive and detail links are
+# /information?uid=... (no event-path segment); dates are ROC-year (112年11月09日).
+- key: indsr
+  name: Institute for National Defense and Security Research
+  short: INDSR
+  enabled: false
+  type: research_institute
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://indsr.org.tw/informations?uid=5&year=1&page=1
+  events_page: https://indsr.org.tw/informations?uid=5&year=1&page=1
+
+# Server-rendered seminar list, but detail links are /PageDoc?fid=... query
+# strings (no event-path segment) so the generic scraper finds no anchors.
+- key: nccu_iir
+  name: NCCU — Institute of International Relations
+  short: NCCU/IIR
+  enabled: false
+  type: university
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://iir.nccu.edu.tw/PageDoc?fid=7478
+  events_page: https://iir.nccu.edu.tw/PageDoc?fid=7478
+
+# JS-rendered SPA — the events page returns an "enable JavaScript" stub to a
+# plain fetch, so there is no server-side event list to scrape.
+- key: tfd
+  name: Taiwan Foundation for Democracy
+  short: TFD
+  enabled: false
+  type: think_tank
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://www.tfd.org.tw/en
+  events_page: https://www.tfd.org.tw/en
+
+# WordPress, but the 學術活動 landing page is a menu to Chinese-slug subpages
+# (no event-path segment); detail pages carry 年月日 dates. Manual.
+- key: sinica_ips
+  name: Academia Sinica — Institute of Political Science
+  short: AS/IPS
+  enabled: false
+  type: research_institute
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://www.ipsas.sinica.edu.tw/學術活動/
+  events_page: https://www.ipsas.sinica.edu.tw/學術活動/
+
+# Server-rendered, but entries are activity reports ("…辦理情形", past) behind
+# /activityDetail?lang=... query strings — no event-path segment for the scraper.
+- key: inpr
+  name: Institute for National Policy Research
+  short: INPR
+  enabled: false
+  type: think_tank
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://www.inpr.org.tw/activitys?lang=zh-tw
+  events_page: https://www.inpr.org.tw/activitys?lang=zh-tw
+
+# Events listing renders via JavaScript; detail links are /article-pfen-NNNN
+# (no event-path segment). A plain fetch yields no scrapable event anchors.
+- key: prospect
+  name: The Prospect Foundation
+  short: Prospect
+  enabled: false
+  type: think_tank
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://www.pf.org.tw/en/pfen/24.html
+  events_page: https://www.pf.org.tw/en/pfen/24.html
+
+# Scrapable (English), but /event/<id> is a PAST-event news archive ("…Convenes",
+# "…Concludes") with ordinal dates ("24th Apr, 2026") the parser can't read —
+# auto-collecting would surface stale items, like CEIAS/FIIA. Manual by convention.
+- key: taef
+  name: Taiwan-Asia Exchange Foundation
+  short: TAEF
+  enabled: false
+  type: think_tank
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://www.taef.org/event
+  events_page: https://www.taef.org/event
+
+# Wix-style site that refuses non-browser/datacentre traffic (does not resolve
+# from the collector); content is JavaScript-rendered. Manual-check card.
+- key: cspa
+  name: Cross-Strait Policy Association
+  short: CSPA
+  enabled: false
+  type: think_tank
+  region: Indo-Pacific
+  country: Taiwan
+  city: Taipei
+  method: scrape
+  url: https://www.twcspa.com/event
+  events_page: https://www.twcspa.com/event
