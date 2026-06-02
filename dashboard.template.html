@@ -123,6 +123,8 @@ a{color:inherit}
 .chip .n{color:var(--ink-3); font-size:10px}
 .chip:hover{border-color:var(--ink-2)}
 .chip.off{opacity:.38; border-style:dashed}
+.chip.sel{background:var(--signal); border-color:var(--signal); color:#fff}
+.chip.sel .n{color:rgba(255,255,255,.72)}
 .chip.mode{background:var(--card); border-color:var(--rule-2)}
 .chip.mode.on{background:var(--signal); border-color:var(--signal); color:#fff}
 .chip.mode.on .n{color:rgba(255,255,255,.7)}
@@ -136,6 +138,8 @@ a{color:inherit}
 }
 .src:hover{background:var(--paper-2)}
 .src.off{opacity:.36}
+.src.sel{background:var(--signal-bg)}
+.src.sel .nm{color:var(--signal-dk);font-weight:600}
 .src .fl{font-size:13px;flex:none;width:18px;text-align:center}
 .src .dot{width:6px;height:6px;border-radius:50%;flex:none}
 .src .nm{flex:1; font-family:var(--mono); font-size:11.5px}
@@ -177,6 +181,8 @@ a{color:inherit}
 }
 .pin.on{background:var(--ink);transform:scale(1.14)}
 .pin.dim{opacity:.4}
+.pin.inst{background:var(--paper);color:var(--signal-dk);border:2px dashed var(--signal);
+  box-shadow:0 1px 4px rgba(0,0,0,.25);font-size:11px}
 .leaflet-container{font-family:var(--mono)}
 .leaflet-bar a{background:var(--card);color:var(--ink-2);border-color:var(--rule-2)}
 .leaflet-bar a:hover{background:var(--paper-2)}
@@ -206,6 +212,12 @@ a{color:inherit}
   text-transform:none;
 }
 .citytag:hover{background:var(--signal)}
+.clearall{
+  font-family:var(--mono); font-size:10px; letter-spacing:.05em;
+  text-transform:uppercase; background:var(--signal); color:#fff;
+  border:1px solid var(--signal); padding:3px 8px; cursor:pointer;
+}
+.clearall:hover{background:var(--signal-dk); border-color:var(--signal-dk)}
 
 /* ---------- MONTH DIVIDER ---------- */
 .month{display:flex; align-items:center; gap:12px; margin:24px 0 6px; padding-top:6px}
@@ -320,23 +332,23 @@ a{color:inherit}
       <div class="toggle-row" id="quick"></div>
     </div>
     <div class="s-block">
-      <div class="s-head"><span>Topic</span><span class="hd-act" data-facet="topics"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="s-head"><span>Topic</span><span class="hd-act" data-facet="topics"><button data-act="clear">clear</button></span></div>
       <div class="chips" id="topics"></div>
     </div>
     <div class="s-block">
-      <div class="s-head"><span>Format</span><span class="hd-act" data-facet="formats"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="s-head"><span>Format</span><span class="hd-act" data-facet="formats"><button data-act="clear">clear</button></span></div>
       <div class="chips" id="formats"></div>
     </div>
     <div class="s-block">
-      <div class="s-head"><span>Region</span><span class="hd-act" data-facet="regions"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="s-head"><span>Region</span><span class="hd-act" data-facet="regions"><button data-act="clear">clear</button></span></div>
       <div class="chips" id="regions"></div>
     </div>
     <div class="s-block">
-      <div class="s-head"><span>Institution type</span><span class="hd-act" data-facet="types"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="s-head"><span>Institution type</span><span class="hd-act" data-facet="types"><button data-act="clear">clear</button></span></div>
       <div class="chips" id="types"></div>
     </div>
     <div class="s-block">
-      <div class="s-head"><span>Sources</span><span class="hd-act" data-facet="sources"><button data-act="all">all</button><button data-act="none">none</button></span></div>
+      <div class="s-head"><span>Sources</span><span class="hd-act" data-facet="sources"><button data-act="clear">clear</button></span></div>
       <div id="sources"></div>
     </div>
     <button class="reset" id="reset">&#8634; Reset all filters</button>
@@ -396,7 +408,10 @@ const EVENTS = DATA.events.map(e=>{
   return Object.assign({},e,{_d:d,_new:fs>=WEEK_AGO});
 }).filter(e=> !e._d || e._d>=TODAY);
 
-/* ---------- FILTER STATE (everything starts ON — high recall) ---------- */
+/* ---------- FILTER STATE ----------------------------------------------------
+   Each facet set is an OPT-IN selection: an empty set means "no constraint"
+   (show everything). Clicking a chip adds it; clicking more accumulates;
+   clicking a selected chip removes it again. ------------------------------- */
 const F={ q:'', newOnly:false, window:0, city:null,
           topics:new Set(), formats:new Set(), regions:new Set(),
           types:new Set(), sources:new Set() };
@@ -413,11 +428,7 @@ const C_TOPIC =valuesOf('topics',true);
 const C_FORMAT=valuesOf('format',false);
 const C_REGION=valuesOf('region',false);
 const C_TYPE  =valuesOf('type',false);
-Object.keys(C_TOPIC ).forEach(v=>F.topics.add(v));
-Object.keys(C_FORMAT).forEach(v=>F.formats.add(v));
-Object.keys(C_REGION).forEach(v=>F.regions.add(v));
-Object.keys(C_TYPE  ).forEach(v=>F.types.add(v));
-DATA.sources.forEach(s=>F.sources.add(s.short));
+/* sets intentionally start EMPTY — see FILTER STATE note above */
 
 /* ---------- SIDEBAR ---------- */
 const chipRegistry=[];   // {el,set,val} — for syncing on/off classes
@@ -488,29 +499,37 @@ DATA.sources.forEach(s=>{(byType[s.type]=byType[s.type]||[]).push(s);});
   });
 });
 
-/* all / none per section */
+/* clear one section's selection (empty = no constraint = show all) */
 const FACETSETS={topics:F.topics,formats:F.formats,regions:F.regions,
                  types:F.types,sources:F.sources};
-const FACETALL ={topics:Object.keys(C_TOPIC),formats:Object.keys(C_FORMAT),
-                 regions:Object.keys(C_REGION),types:Object.keys(C_TYPE),
-                 sources:DATA.sources.map(s=>s.short)};
 document.querySelectorAll('.hd-act').forEach(h=>{
   const f=h.dataset.facet;
-  h.querySelector('[data-act=all]').onclick =()=>{
-    FACETSETS[f].clear(); FACETALL[f].forEach(v=>FACETSETS[f].add(v)); render();};
-  h.querySelector('[data-act=none]').onclick=()=>{ FACETSETS[f].clear(); render();};
+  h.querySelector('[data-act=clear]').onclick=()=>{ FACETSETS[f].clear(); render(); };
 });
+/* one place to wipe every filter back to "show all" */
+function clearAllFilters(){
+  F.q='';F.newOnly=false;F.window=0;F.city=null;
+  Object.values(FACETSETS).forEach(set=>set.clear());
+  $('#search').value='';
+  render();
+}
+function anyFilterActive(){
+  return !!(F.q||F.newOnly||F.window||F.city||
+            F.topics.size||F.formats.size||F.regions.size||F.types.size||F.sources.size);
+}
 
 /* ---------- FILTERING ---------- */
 function passNonGeo(e){
-  if(!F.sources.has(e.institution)) return false;
+  if(F.sources.size && !F.sources.has(e.institution)) return false;
   if(F.newOnly && !e._new) return false;
   if(F.window && e._d && e._d>new Date(TODAY.getTime()+F.window*864e5)) return false;
-  const evt = e.topics.length?e.topics:['— untagged'];
-  if(!evt.some(t=>F.topics.has(t))) return false;
-  if(!F.formats.has(e.format)) return false;
-  if(!F.regions.has(e.region)) return false;
-  if(!F.types.has(e.type)) return false;
+  if(F.topics.size){
+    const evt = e.topics.length?e.topics:['— untagged'];
+    if(!evt.some(t=>F.topics.has(t))) return false;
+  }
+  if(F.formats.size && !F.formats.has(e.format)) return false;
+  if(F.regions.size && !F.regions.has(e.region)) return false;
+  if(F.types.size && !F.types.has(e.type)) return false;
   if(F.q){
     const hay=(e.title+' '+e.institution+' '+e.summary+' '+e.topics.join(' ')+' '+(e.city||'')).toLowerCase();
     if(!hay.includes(F.q)) return false;
@@ -537,6 +556,13 @@ function initMap(){
   setTiles();
   window._map.setView([52,8],4);
 }
+/* does a (manual) source pass the institution-level facets? */
+function srcPasses(s){
+  if(F.sources.size && !F.sources.has(s.short)) return false;
+  if(F.regions.size && !F.regions.has(s.region)) return false;
+  if(F.types.size && !F.types.has(s.type)) return false;
+  return true;
+}
 function renderMap(){
   if(!window._map) return;
   markerLayer.clearLayers();
@@ -545,6 +571,7 @@ function renderMap(){
   const byCity={};
   base.forEach(e=>{(byCity[e.city]=byCity[e.city]||{city:e.city,lat:e.lat,lng:e.lng,n:0}).n++;});
   const cities=Object.values(byCity);
+  const allCoords=[];
   cities.forEach(c=>{
     const active=F.city===c.city;
     const sz=26+Math.min(c.n,18)*1.5;
@@ -553,20 +580,46 @@ function renderMap(){
     const m=L.marker([c.lat,c.lng],{icon}).addTo(markerLayer);
     m.bindTooltip(c.city+' · '+c.n+' event'+(c.n>1?'s':''),{direction:'top',offset:[0,-sz/2]});
     m.on('click',()=>{F.city=active?null:c.city;render();});
+    allCoords.push([c.lat,c.lng]);
   });
-  $('#mapInfo').textContent=`${base.length} mapped event${base.length!==1?'s':''} · ${cities.length} cit${cities.length!==1?'ies':'y'}`;
+  // manual-check institutions: distinct dashed pins, grouped by city, shown only
+  // for cities not already carrying an event pin — so Taipei (and other
+  // manual-only locations) appear on the map without cluttering live cities.
+  const eventCities=new Set(cities.map(c=>c.city));
+  const manualByCity={};
+  DATA.sources.filter(s=>s.status==='manual'&&s.lat!=null&&!eventCities.has(s.city)&&srcPasses(s))
+    .forEach(s=>{(manualByCity[s.city]=manualByCity[s.city]||{city:s.city,lat:s.lat,lng:s.lng,items:[]}).items.push(s);});
+  const manualCities=Object.values(manualByCity);
+  let manualCount=0;
+  manualCities.forEach(c=>{
+    manualCount+=c.items.length;
+    const sz=22, names=c.items.map(s=>s.short).join(', ');
+    const icon=L.divIcon({className:'',iconSize:[sz,sz],
+      html:`<div class="pin inst">${c.items.length}</div>`});
+    const m=L.marker([c.lat,c.lng],{icon}).addTo(markerLayer);
+    m.bindTooltip(c.city+' · '+c.items.length+' to check: '+names,{direction:'top',offset:[0,-sz/2]});
+    m.on('click',()=>{ if(c.items.length===1) window.open(c.items[0].events_page,'_blank','noopener'); });
+    allCoords.push([c.lat,c.lng]);
+  });
+  let info=`${base.length} mapped event${base.length!==1?'s':''} · ${cities.length} cit${cities.length!==1?'ies':'y'}`;
+  if(manualCount) info+=` · ${manualCount} to check`;
+  $('#mapInfo').textContent=info;
   $('#mapOnline').textContent=online?`+ ${online} online`:'';
-  const key=cities.map(c=>c.city).sort().join(',');
+  const key=allCoords.map(c=>c.join(',')).sort().join('|');
   if(key && key!==lastCityKey){
     lastCityKey=key;
-    const grp=L.featureGroup(cities.map(c=>L.marker([c.lat,c.lng])));
-    try{ window._map.fitBounds(grp.getBounds().pad(0.4),{maxZoom:7}); }catch(e){}
+    const grp=L.featureGroup(allCoords.map(c=>L.marker(c)));
+    try{ window._map.fitBounds(grp.getBounds().pad(0.3),{maxZoom:7}); }catch(e){}
   }
 }
 
 /* ---------- RENDER ---------- */
 function syncChips(){
-  chipRegistry.forEach(({el,set,val})=>el.classList.toggle('off',!set.has(val)));
+  chipRegistry.forEach(({el,set,val})=>{
+    const sel=set.has(val);
+    el.classList.toggle('sel',sel);          // highlighted when picked
+    el.classList.toggle('off',set.size>0 && !sel);  // fade the rest only once something is picked
+  });
   newChip.classList.toggle('on',F.newOnly);
   Object.entries(winChips).forEach(([n,c])=>c.classList.toggle('on',F.window==n));
 }
@@ -580,8 +633,8 @@ function fmtDateBox(e){
 function facetSummary(){
   const out=[];
   const chk=(set,all,noun)=>{
-    if(set.size===0) out.push('no '+noun);
-    else if(set.size<all) out.push(set.size+'/'+all+' '+noun);
+    if(set.size>0 && set.size<all) out.push(set.size+'/'+all+' '+noun);
+    else if(set.size>0) out.push('all '+noun);
   };
   chk(F.topics,Object.keys(C_TOPIC).length,'topics');
   chk(F.formats,Object.keys(C_FORMAT).length,'formats');
@@ -605,6 +658,12 @@ function render(){
   // result bar
   $('#rcount').innerHTML=`<b>${vis.length}</b> event${vis.length!==1?'s':''} shown`;
   const rmeta=$('#rmeta'); rmeta.innerHTML='';
+  if(anyFilterActive()){
+    const ca=document.createElement('button'); ca.className='clearall';
+    ca.textContent='✕ clear all filters';
+    ca.onclick=clearAllFilters;
+    rmeta.appendChild(ca);
+  }
   if(F.city){
     const tag=document.createElement('span'); tag.className='citytag';
     tag.textContent='\u25C9 '+F.city+'  \u2715';
@@ -677,18 +736,14 @@ function render(){
     `<b>${ok}/${live} sources live</b> · generated ${DATA.generated}<br>`+parts+
     `<br><br>Edit <b>sources.yaml</b> to add or remove institutions. `+
     `“New this week” = first appeared in the last 7 days. Past events are hidden automatically. `+
-    `Online events are listed but not pinned on the map.`;
+    `Online events are listed but not pinned on the map. `+
+    `Dashed pins mark manual-check institutions (shown with a “check ↗” link, not auto-collected).`;
 })();
 
 /* ---------- WIRING ---------- */
 let deb;
 $('#search').oninput=ev=>{clearTimeout(deb);deb=setTimeout(()=>{F.q=ev.target.value.trim().toLowerCase();render();},150);};
-$('#reset').onclick=()=>{
-  F.q='';F.newOnly=false;F.window=0;F.city=null;
-  Object.entries(FACETSETS).forEach(([f,set])=>{set.clear();FACETALL[f].forEach(v=>set.add(v));});
-  $('#search').value='';
-  render();
-};
+$('#reset').onclick=clearAllFilters;
 $('#sToggle').onclick=()=>{
   const sb=$('#sidebar'); sb.classList.toggle('open');
   $('#sToggle').innerHTML=(sb.classList.contains('open')?'\u25B4':'\u25BE')+' Filters';
