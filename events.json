@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-27 09:37",
-  "today": "2026-07-27",
+  "generated": "2026-07-30 08:12",
+  "today": "2026-07-30",
   "sources": [
     {
       "short": "CERI",
@@ -149,8 +149,8 @@
       "lat": 52.52,
       "lng": 13.405,
       "count": 0,
-      "status": "error",
-      "note": "HTTPError: 415 Client Error: Unsupported Media Type for url: https://ecfr.eu/events/"
+      "status": "empty",
+      "note": ""
     },
     {
       "short": "ISDP",
@@ -223,7 +223,7 @@
       "city": "Washington",
       "lat": 38.907,
       "lng": -77.037,
-      "count": 6,
+      "count": 9,
       "status": "ok",
       "note": ""
     },
@@ -314,8 +314,8 @@
       "lat": 59.329,
       "lng": 18.069,
       "count": 0,
-      "status": "error",
-      "note": "HTTPError: 415 Client Error: Unsupported Media Type for url: https://kinacentrum.se/en/events/"
+      "status": "empty",
+      "note": ""
     },
     {
       "short": "Lowy",
@@ -575,6 +575,33 @@
   ],
   "events": [
     {
+      "id": "d3df9e397ea5",
+      "title": "Russian Roulette Live Podcast | Rebuilding to Reconquer: Can Russia’s Defense Firms Deliver?",
+      "url": "https://www.csis.org/events/russian-roulette-live-podcast-rebuilding-reconquer-can-russias-defense-firms-deliver",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-07-28",
+      "date_end": null,
+      "time": "11:00",
+      "date_text": "",
+      "location": null,
+      "format": "in-person",
+      "topics": [
+        "Russia & Ukraine",
+        "Defence & military"
+      ],
+      "summary": "Image Photo: ILYA PITALEV/SPUTNIK/AFP/Getty Images Russian Roulette Live Podcast | Rebuilding to Reconquer: Can Russia’s Defense Firms Deliver? July 28, 2026 • 11:00 am – 12:00 pm EDT Hosted by Europe, Russia, and Eurasia Program",
+      "first_seen": "2026-07-30",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
       "id": "dba688e61240",
       "title": "Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon. Mike Obadal",
       "url": "https://www.csis.org/events/future-us-land-power-perspectives-under-secretary-us-army-hon-mike-obadal",
@@ -587,14 +614,14 @@
       "date_end": null,
       "time": "09:30",
       "date_text": "",
-      "location": "Webinar",
-      "format": "online",
+      "location": null,
+      "format": "in-person",
       "topics": [
         "Japan & Korea",
         "Defence & military",
         "Security & intelligence"
       ],
-      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT In Person Webcast Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Webcast Hosted by Korea Chair Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon",
+      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Hosted by Korea Chair Tech and Trade in Korea: AI Boom and Tariffs Return | The Capital Cable #139 July 30, 2026 • 9:45 – 10:30 a",
       "first_seen": "2026-07-20",
       "country": "United States",
       "city": "Washington",
@@ -615,14 +642,13 @@
       "date_end": null,
       "time": "09:30",
       "date_text": "",
-      "location": "Webinar",
-      "format": "online",
+      "location": null,
+      "format": "in-person",
       "topics": [
         "Japan & Korea",
-        "Defence & military",
         "Security & intelligence"
       ],
-      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT In Person Webcast Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Webcast Hosted by Korea Chair Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon",
+      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Hosted by Korea Chair Tech and Trade in Korea: AI Boom and Tariffs Return | The Capital Cable #139 July 30, 2026 • 9:45 – 10:30 a",
       "first_seen": "2026-07-13",
       "country": "United States",
       "city": "Washington",
@@ -631,9 +657,9 @@
       "lng": -77.037
     },
     {
-      "id": "e1081cd492d5",
-      "title": "Navigating the Strait of Hormuz Energy Crisis: Trends and Variety Across Global Policy Responses",
-      "url": "https://www.csis.org/events/navigating-strait-hormuz-energy-crisis-trends-and-variety-across-global-policy-responses",
+      "id": "14ebe195eb19",
+      "title": "Tech and Trade in Korea: AI Boom and Tariffs Return | The Capital Cable #139",
+      "url": "https://www.csis.org/events/tech-and-trade-korea-ai-boom-and-tariffs-return-capital-cable-139",
       "source_key": "csis",
       "institution": "CSIS",
       "institution_full": "Center for Strategic and International Studies",
@@ -643,42 +669,14 @@
       "date_end": null,
       "time": "09:30",
       "date_text": "",
-      "location": "Webinar",
-      "format": "online",
+      "location": null,
+      "format": "in-person",
       "topics": [
         "Japan & Korea",
-        "Defence & military",
         "Security & intelligence"
       ],
-      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT In Person Webcast Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Webcast Hosted by Korea Chair Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon",
-      "first_seen": "2026-07-20",
-      "country": "United States",
-      "city": "Washington",
-      "flag": "🇺🇸",
-      "lat": 38.907,
-      "lng": -77.037
-    },
-    {
-      "id": "96b2bd803c51",
-      "title": "Spotlighting the North Carolina Research Triangle's Biopharmaceutical Manufacturing and Innovation Hub",
-      "url": "https://www.csis.org/events/spotlighting-north-carolina-research-triangles-biopharmaceutical-manufacturing-and",
-      "source_key": "csis",
-      "institution": "CSIS",
-      "institution_full": "Center for Strategic and International Studies",
-      "type": "think_tank",
-      "region": "North America",
-      "date": "2026-07-29",
-      "date_end": null,
-      "time": "11:00",
-      "date_text": "",
-      "location": "Webinar",
-      "format": "online",
-      "topics": [
-        "Japan & Korea",
-        "Defence & military"
-      ],
-      "summary": "Upcoming Events Image The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Webcast Hosted by Korea Chair Image Photo: ARIS MARTINEZ/AFP via Getty Images Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon. Mike Obadal July 30, 2026 • 3:00 – 4:15 pm EDT In Person Webcast Hosted by Center for the Industrial",
-      "first_seen": "2026-07-27",
+      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Hosted by Korea Chair Tech and Trade in Korea: AI Boom and Tariffs Return | The Capital Cable #139 July 30, 2026 • 9:45 – 10:30 a",
+      "first_seen": "2026-07-30",
       "country": "United States",
       "city": "Washington",
       "flag": "🇺🇸",
@@ -698,15 +696,92 @@
       "date_end": null,
       "time": "09:30",
       "date_text": "",
+      "location": null,
+      "format": "in-person",
+      "topics": [
+        "Japan & Korea",
+        "Security & intelligence"
+      ],
+      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Hosted by Korea Chair Tech and Trade in Korea: AI Boom and Tariffs Return | The Capital Cable #139 July 30, 2026 • 9:45 – 10:30 a",
+      "first_seen": "2026-07-20",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
+      "id": "94cda4d44edc",
+      "title": "Lebanon's Strategic Outlook: Diplomacy, Governance, and Economic Recovery",
+      "url": "https://www.csis.org/events/lebanons-strategic-outlook-diplomacy-governance-and-economic-recovery",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-07-30",
+      "date_end": null,
+      "time": "03:00",
+      "date_text": "",
       "location": "Webinar",
       "format": "online",
       "topics": [
-        "Japan & Korea",
-        "Defence & military",
-        "Security & intelligence"
+        "Defence & military"
       ],
-      "summary": "Launching the International Call to Action for 6G Leadership and Security July 29, 2026 • 9:30 am – 12:00 pm EDT In Person Webcast Hosted by Strategic Technologies Program The Impossible State Live Podcast: Poisoning the Well? U.S.-Korea Trade Tension July 29, 2026 • 11:00 – 11:45 am EDT Webcast Hosted by Korea Chair Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon",
+      "summary": "Image Photo: ARIS MARTINEZ/AFP via Getty Images Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon. Mike Obadal July 30, 2026 • 3:00 – 4:15 pm EDT In Person Webcast Hosted by Center for the Industrial Base Image Photo: Ali Hashisho/Xinhua/Getty Images Lebanon's Strategic Outlook: Diplomacy, Governance, and Economic Recovery August 3, 2026 • 9:00 – 10:00 am EDT Webcas",
+      "first_seen": "2026-07-30",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
+      "id": "e1081cd492d5",
+      "title": "Navigating the Strait of Hormuz Energy Crisis: Trends and Variety Across Global Policy Responses",
+      "url": "https://www.csis.org/events/navigating-strait-hormuz-energy-crisis-trends-and-variety-across-global-policy-responses",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-07-30",
+      "date_end": null,
+      "time": "03:00",
+      "date_text": "",
+      "location": "Webinar",
+      "format": "online",
+      "topics": [
+        "Defence & military"
+      ],
+      "summary": "Image Photo: ARIS MARTINEZ/AFP via Getty Images Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon. Mike Obadal July 30, 2026 • 3:00 – 4:15 pm EDT In Person Webcast Hosted by Center for the Industrial Base Image Photo: Ali Hashisho/Xinhua/Getty Images Lebanon's Strategic Outlook: Diplomacy, Governance, and Economic Recovery August 3, 2026 • 9:00 – 10:00 am EDT Webcas",
       "first_seen": "2026-07-20",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
+      "id": "96b2bd803c51",
+      "title": "Spotlighting the North Carolina Research Triangle's Biopharmaceutical Manufacturing and Innovation Hub",
+      "url": "https://www.csis.org/events/spotlighting-north-carolina-research-triangles-biopharmaceutical-manufacturing-and",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-07-30",
+      "date_end": null,
+      "time": "03:00",
+      "date_text": "",
+      "location": "Webinar",
+      "format": "online",
+      "topics": [
+        "Defence & military"
+      ],
+      "summary": "Image Photo: ARIS MARTINEZ/AFP via Getty Images Future of U.S. Land Power: Perspectives from Under Secretary of the U.S. Army Hon. Mike Obadal July 30, 2026 • 3:00 – 4:15 pm EDT In Person Webcast Hosted by Center for the Industrial Base Image Photo: Ali Hashisho/Xinhua/Getty Images Lebanon's Strategic Outlook: Diplomacy, Governance, and Economic Recovery August 3, 2026 • 9:00 – 10:00 am EDT Webcas",
+      "first_seen": "2026-07-27",
       "country": "United States",
       "city": "Washington",
       "flag": "🇺🇸",
