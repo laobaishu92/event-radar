@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-13 07:16",
-  "today": "2026-08-13",
+  "generated": "2026-08-17 06:39",
+  "today": "2026-08-17",
   "sources": [
     {
       "short": "CERI",
@@ -223,7 +223,7 @@
       "city": "Washington",
       "lat": 38.907,
       "lng": -77.037,
-      "count": 5,
+      "count": 7,
       "status": "ok",
       "note": ""
     },
@@ -575,6 +575,35 @@
   ],
   "events": [
     {
+      "id": "0c27dc48b300",
+      "title": "An International Call to Action on 6G | Betting on America",
+      "url": "https://www.csis.org/events/international-call-action-6g-betting-america",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-08-18",
+      "date_end": null,
+      "time": "08:00",
+      "date_text": "",
+      "location": "Webinar",
+      "format": "online",
+      "topics": [
+        "Japan & Korea",
+        "Security & intelligence",
+        "Economic security",
+        "Climate & security"
+      ],
+      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program An International Call to Action on 6G | Betting on America August 19, 2026 • 10:00 – 10:40 am EDT Webcast Hosted by Economic Security and Technology Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast As",
+      "first_seen": "2026-08-17",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
       "id": "2c17c3c78bb5",
       "title": "Bend but Do Not Break: Shaping the Future of the All-Volunteer Force",
       "url": "https://www.csis.org/events/bend-do-not-break-shaping-future-all-volunteer-force",
@@ -592,38 +621,11 @@
       "topics": [
         "Japan & Korea",
         "Security & intelligence",
+        "Economic security",
         "Climate & security"
       ],
-      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast Asia Program Bend but Do Not Break: Shaping the Future of the All-Volunteer Force September 9, 2026 • 4:00 – 5:00 pm EDT Webcast Hosted by Arleigh A. B",
+      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program An International Call to Action on 6G | Betting on America August 19, 2026 • 10:00 – 10:40 am EDT Webcast Hosted by Economic Security and Technology Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast As",
       "first_seen": "2026-08-03",
-      "country": "United States",
-      "city": "Washington",
-      "flag": "🇺🇸",
-      "lat": 38.907,
-      "lng": -77.037
-    },
-    {
-      "id": "9f51c1620ce3",
-      "title": "Defending the Homeland with General Lori Robinson, USAF (Ret.)",
-      "url": "https://www.csis.org/events/defending-homeland-general-lori-robinson-usaf-ret",
-      "source_key": "csis",
-      "institution": "CSIS",
-      "institution_full": "Center for Strategic and International Studies",
-      "type": "think_tank",
-      "region": "North America",
-      "date": "2026-08-18",
-      "date_end": null,
-      "time": "08:00",
-      "date_text": "",
-      "location": "Webinar",
-      "format": "online",
-      "topics": [
-        "Japan & Korea",
-        "Security & intelligence",
-        "Climate & security"
-      ],
-      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast Asia Program Bend but Do Not Break: Shaping the Future of the All-Volunteer Force September 9, 2026 • 4:00 – 5:00 pm EDT Webcast Hosted by Arleigh A. B",
-      "first_seen": "2026-08-13",
       "country": "United States",
       "city": "Washington",
       "flag": "🇺🇸",
@@ -648,9 +650,10 @@
       "topics": [
         "Japan & Korea",
         "Security & intelligence",
+        "Economic security",
         "Climate & security"
       ],
-      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast Asia Program Bend but Do Not Break: Shaping the Future of the All-Volunteer Force September 9, 2026 • 4:00 – 5:00 pm EDT Webcast Hosted by Arleigh A. B",
+      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program An International Call to Action on 6G | Betting on America August 19, 2026 • 10:00 – 10:40 am EDT Webcast Hosted by Economic Security and Technology Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast As",
       "first_seen": "2026-07-23",
       "country": "United States",
       "city": "Washington",
@@ -676,10 +679,39 @@
       "topics": [
         "Japan & Korea",
         "Security & intelligence",
+        "Economic security",
         "Climate & security"
       ],
-      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast Asia Program Bend but Do Not Break: Shaping the Future of the All-Volunteer Force September 9, 2026 • 4:00 – 5:00 pm EDT Webcast Hosted by Arleigh A. B",
+      "summary": "The Hormuz Implications for Energy Policymaking: Japan and South Korea August 18, 2026 • 8:00 – 9:00 am EDT Webinar Hosted by Energy Security and Climate Change Program An International Call to Action on 6G | Betting on America August 19, 2026 • 10:00 – 10:40 am EDT Webcast Hosted by Economic Security and Technology Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast As",
       "first_seen": "2026-08-06",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
+      "id": "9f51c1620ce3",
+      "title": "Defending the Homeland with General Lori Robinson, USAF (Ret.)",
+      "url": "https://www.csis.org/events/defending-homeland-general-lori-robinson-usaf-ret",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-08-19",
+      "date_end": null,
+      "time": "10:00",
+      "date_text": "",
+      "location": null,
+      "format": "in-person",
+      "topics": [
+        "Defence & military",
+        "Security & intelligence",
+        "Economic security"
+      ],
+      "summary": "Upcoming Events Image An International Call to Action on 6G | Betting on America August 19, 2026 • 10:00 – 10:40 am EDT Webcast Hosted by Economic Security and Technology Image Photo: Ted ALJIBE/AFP/Getty Images Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast Asia Program Image Photo: U.S. Army National Guard photo by Sgt. Kalina Hyche/DVIDS Bend but Do Not Break: S",
+      "first_seen": "2026-08-13",
       "country": "United States",
       "city": "Washington",
       "flag": "🇺🇸",
@@ -1035,35 +1067,6 @@
       "lng": 2.343
     },
     {
-      "id": "1fb09ef8473a",
-      "title": "Ensuring Economic and Energy Security: Opportunities for U.S.-Japan Leadership",
-      "url": "https://www.csis.org/events/ensuring-economic-and-energy-security-opportunities-us-japan-leadership",
-      "source_key": "csis",
-      "institution": "CSIS",
-      "institution_full": "Center for Strategic and International Studies",
-      "type": "think_tank",
-      "region": "North America",
-      "date": "2026-09-09",
-      "date_end": null,
-      "time": "04:00",
-      "date_text": "",
-      "location": null,
-      "format": "in-person",
-      "topics": [
-        "Japan & Korea",
-        "Defence & military",
-        "Security & intelligence",
-        "Climate & security"
-      ],
-      "summary": "Upcoming Events Image Photo: Ted ALJIBE/AFP/Getty Images Manila Strategy Forum 2026 September 9 – 10, 2026 In Person Hosted by Southeast Asia Program Image Photo: U.S. Army National Guard photo by Sgt. Kalina Hyche/DVIDS Bend but Do Not Break: Shaping the Future of the All-Volunteer Force September 9, 2026 • 4:00 – 5:00 pm EDT Webcast Hosted by Arleigh A. Burke Chair in Strategy Image Photo: Denni",
-      "first_seen": "2026-08-06",
-      "country": "United States",
-      "city": "Washington",
-      "flag": "🇺🇸",
-      "lat": 38.907,
-      "lng": -77.037
-    },
-    {
       "id": "28e361c5eee0",
       "title": "Retour du Kenya. Enquête sur le personnel du siège des Nations Unies à Nairobi",
       "url": "https://www.sciencespo.fr/ceri/en/events/retour-du-kenya-enquete-sur-le-personnel-du-siege-des-nations-unies-a-nairobi",
@@ -1186,6 +1189,33 @@
       "lng": 2.343
     },
     {
+      "id": "208a51804df5",
+      "title": "The Implications of the Hormuz Energy Crisis on South Asia",
+      "url": "https://www.csis.org/events/implications-hormuz-energy-crisis-south-asia",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-09-21",
+      "date_end": null,
+      "time": null,
+      "date_text": "",
+      "location": null,
+      "format": "in-person",
+      "topics": [
+        "Security & intelligence",
+        "Climate & security"
+      ],
+      "summary": "The Implications of the Hormuz Energy Crisis on South Asia The Hormuz energy crisis disrupts South Asian energy security. This CSIS roundtable examines implications for India, Pakistan, Bangladesh, and Sri Lanka, exploring geopolitical shifts, energy transitions, and resilience strategies. Event — September 21, 2026",
+      "first_seen": "2026-08-17",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
+    },
+    {
       "id": "7368f8f3b1f8",
       "title": "MERICS European China Talent Program 2026",
       "url": "https://merics.org/en/events/merics-european-china-talent-program-2026",
@@ -1234,6 +1264,34 @@
       "flag": "🇫🇷",
       "lat": 48.857,
       "lng": 2.343
+    },
+    {
+      "id": "1fb09ef8473a",
+      "title": "Ensuring Economic and Energy Security: Opportunities for U.S.-Japan Leadership",
+      "url": "https://www.csis.org/events/ensuring-economic-and-energy-security-opportunities-us-japan-leadership",
+      "source_key": "csis",
+      "institution": "CSIS",
+      "institution_full": "Center for Strategic and International Studies",
+      "type": "think_tank",
+      "region": "North America",
+      "date": "2026-09-24",
+      "date_end": null,
+      "time": null,
+      "date_text": "",
+      "location": null,
+      "format": "in-person",
+      "topics": [
+        "Japan & Korea",
+        "Security & intelligence",
+        "Climate & security"
+      ],
+      "summary": "Ensuring Economic and Energy Security: Opportunities for U.S.-Japan Leadership The CSIS Japan Chair and the Japan Economic Foundation convene leading experts to examine opportunities for the United States, Japan and other partners to strengthen their economic and energy security in an increasingly uncertain international environment. Event — September 24, 2026",
+      "first_seen": "2026-08-06",
+      "country": "United States",
+      "city": "Washington",
+      "flag": "🇺🇸",
+      "lat": 38.907,
+      "lng": -77.037
     },
     {
       "id": "3a27ad15b6a7",
